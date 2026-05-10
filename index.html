@@ -244,7 +244,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
   <div class="topbar">
     <div class="topbar-logo">flow<span>.</span></div>
     <div class="topbar-right">
-      <div class="topbar-month" id="topbar-month-label">Mayo 2026</div>
+      <div class="topbar-month" id="topbar-month-label" style="display:none"></div>
     </div>
   </div>
 
@@ -613,7 +613,16 @@ function renderAll(){
 }
 
 function updateTopbar(){
-  document.getElementById('topbar-month-label').textContent=ymLabel(currentYM());
+  const el=document.getElementById('topbar-month-label');
+  if(state.currentPage==='mes'){
+    el.style.display='block';
+    el.textContent=ymLabel(state.viewMonth);
+  } else if(state.currentPage==='dashboard'){
+    el.style.display='block';
+    el.textContent=ymLabel(currentYM());
+  } else {
+    el.style.display='none';
+  }
 }
 
 function renderDash(){
@@ -879,10 +888,29 @@ function incomeMenu(id,btn){
   if(!inc)return;
   const items=[
     {icon:'✎',label:'Editar',action:`closeDropdown();openIncomeSheet('${id}')`},
+    {icon:'⧉',label:'Duplicar',action:`closeDropdown();duplicateIncome('${id}')`},
     ...(inc.status==='pendiente'?[{icon:'✓',label:'Marcar abonado',action:`closeDropdown();markPaid('${id}')`}]:[]),
     {icon:'✕',label:'Eliminar',danger:true,action:`closeDropdown();deleteIncome('${id}')`}
   ];
   showDropdown(items,btn);
+}
+
+function duplicateIncome(id){
+  const inc=state.incomes.find(i=>i.id===id);
+  if(!inc)return;
+  const copy={
+    ...inc,
+    id:uid(),
+    status:'pendiente',
+    paidDate:null,
+    date:new Date().toISOString().slice(0,10)
+  };
+  // if viewing a different month, assign to that month
+  if(state.viewMonth!==currentYM()) copy.date=state.viewMonth+'-01';
+  state.incomes.push(copy);
+  save();renderAll();autoSync();
+  // open edit sheet so user can adjust it
+  openIncomeSheet(copy.id);
 }
 
 function walletMenu(id,btn){
@@ -928,7 +956,7 @@ function saveIncome(){
       if(nw)nw.balance+=precio;
     }
   }
-  save();closeSheet('sheet-income');renderAll();
+  save();closeSheet('sheet-income');renderAll();autoSync();
 }
 
 function markPaid(id){
@@ -938,7 +966,7 @@ function markPaid(id){
   inc.paidDate=new Date().toISOString().slice(0,10);
   const w=state.wallets.find(x=>x.id===inc.walletId);
   if(w)w.balance+=inc.amount;
-  save();renderAll();
+  save();renderAll();autoSync();
 }
 
 function deleteIncome(id){
@@ -950,7 +978,7 @@ function deleteIncome(id){
     if(w)w.balance=Math.max(0,w.balance-inc.amount);
   }
   state.incomes=state.incomes.filter(i=>i.id!==id);
-  save();renderAll();
+  save();renderAll();autoSync();
 }
 
 function saveWallet(){
@@ -964,13 +992,13 @@ function saveWallet(){
   }else{
     state.wallets.push({id:uid(),name:nombre,balance:saldo,currency:moneda});
   }
-  save();closeSheet('sheet-wallet');renderAll();
+  save();closeSheet('sheet-wallet');renderAll();autoSync();
 }
 
 function deleteWallet(id){
   if(!confirm('¿Eliminar esta wallet?'))return;
   state.wallets=state.wallets.filter(w=>w.id!==id);
-  save();renderAll();
+  save();renderAll();autoSync();
 }
 
 function setFilter(f,el){
@@ -1003,6 +1031,14 @@ function setSyncStatus(msg,type){
   el.style.color=type==='ok'?'var(--green)':type==='error'?'var(--red)':'var(--text2)';
   el.textContent=msg;
   if(type!=='loading')setTimeout(()=>{el.style.display='none'},4000);
+}
+
+async function autoSync(){
+  if(!state.sheetsUrl)return;
+  try{
+    const payload=JSON.stringify({action:'sync_all',incomes:state.incomes,wallets:state.wallets,rate:state.rate});
+    await fetch(state.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
+  }catch(e){}
 }
 
 async function syncToSheets(){
