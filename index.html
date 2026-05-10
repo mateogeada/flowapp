@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>flow. — finanzas personales</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#080808;
+--s1:#0f0f0f;
+--s2:#141414;
+--s3:#1c1c1c;
+--s4:#242424;
+--border:#2a2a2a;
+--border2:#333;
+--lime:#FBBF24;
+--lime2:#F59E0B;
+--lime3:#FDE68A;
+--lime-bg:rgba(251,191,36,0.08);
+--lime-border:rgba(251,191,36,0.2);
+--text:#f2f2f2;
+--text2:#888;
+--text3:#555;
+--green:#4ade80;
+--green-bg:rgba(74,222,128,0.09);
+--red:#f87171;
+--red-bg:rgba(248,113,113,0.09);
+--amber:#fbbf24;
+--amber-bg:rgba(251,191,36,0.09);
+--blue:#60a5fa;
+--blue-bg:rgba(96,165,250,0.09);
+--r:12px;--rs:8px;--rl:18px;
+--nav:60px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* SCROLLABLE CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav) + 16px)}
+.page{display:none;padding:0 16px;padding-top:0}
+.page.active{display:block}
+
+/* TOP BAR */
+.topbar{padding:16px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg)}
+.topbar-logo{font-size:20px;font-weight:800;letter-spacing:-1px}
+.topbar-logo span{color:var(--lime)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-month{font-size:12px;font-weight:600;color:var(--text2);background:var(--s3);padding:5px 10px;border-radius:20px;letter-spacing:.3px}
+
+/* BOTTOM NAV */
+.bottomnav{height:var(--nav);background:var(--s1);border-top:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:.3px;transition:color .2s;padding:6px 0}
+.nav-item.active{color:var(--lime)}
+.nav-icon{font-size:18px;line-height:1}
+
+/* SECTION HEADER */
+.sh{padding:16px 0 12px}
+.sh-title{font-size:22px;font-weight:800;letter-spacing:-1px}
+.sh-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.card+.card{margin-top:10px}
+
+/* METRIC HERO */
+.hero-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;overflow:hidden}
+
+.hero-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.hero-value{font-size:32px;font-weight:800;letter-spacing:-1.5px;color:var(--text)}
+.hero-value .currency{font-size:16px;font-weight:600;color:var(--text2);margin-left:2px}
+.hero-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.hero-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:6px;letter-spacing:.3px}
+.hero-badge.up{background:var(--green-bg);color:var(--green)}
+.hero-badge.down{background:var(--red-bg);color:var(--red)}
+.hero-badge.lime{background:var(--lime-bg);color:var(--lime)}
+
+/* METRIC GRID */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.metric-tile{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px 14px 12px}
+.metric-tile-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.metric-tile-val{font-size:18px;font-weight:800;letter-spacing:-0.8px}
+.metric-tile-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* INSIGHT */
+.insight{background:var(--lime-bg);border:1px solid var(--lime-border);border-radius:var(--rs);padding:12px 14px;font-size:13px;line-height:1.55;color:var(--text);margin-bottom:12px}
+.insight b{color:var(--lime)}
+
+/* PROGRESS */
+.prog-bar{height:4px;background:var(--s4);border-radius:99px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;background:var(--lime);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* MINI BARS */
+.mini-bars{display:flex;align-items:flex-end;gap:3px;height:44px}
+.mbar-group{display:flex;align-items:flex-end;gap:1px;flex:1}
+.mbar{border-radius:2px 2px 0 0;min-height:2px;transition:height .4s}
+.mbar.prev{background:var(--s4)}
+.mbar.cur{background:var(--lime);opacity:.85}
+.mini-legend{display:flex;gap:12px;margin-top:8px}
+.legend-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px}
+
+/* INCOME LIST */
+.inc-list{display:flex;flex-direction:column;gap:8px}
+.inc-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow:hidden}
+.inc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.inc-client{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.inc-project{font-size:12px;color:var(--text2);margin-top:1px}
+.inc-amount{font-size:16px;font-weight:800;letter-spacing:-.5px;text-align:right;white-space:nowrap}
+.inc-amount.usd{color:var(--lime)}
+.inc-amount.ars{color:var(--blue)}
+.inc-meta{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.badge.pending{background:var(--amber-bg);color:var(--amber)}
+.badge.paid{background:var(--green-bg);color:var(--green)}
+.badge.usd{background:var(--lime-bg);color:var(--lime)}
+.badge.ars{background:var(--blue-bg);color:var(--blue)}
+.inc-actions{display:flex;gap:6px;margin-top:10px}
+.btn-pay{flex:1;background:var(--green-bg);color:var(--green);border:1px solid rgba(74,222,128,0.2);border-radius:var(--rs);padding:8px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:background .15s}
+.btn-pay:active{background:rgba(74,222,128,0.2)}
+.inc-dots-btn{background:transparent;border:1px solid var(--border2);border-radius:var(--rs);padding:8px 10px;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;transition:background .15s}
+.inc-dots-btn:active{background:var(--s3)}
+
+/* MONTH NAV */
+.month-nav{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:14px}
+.month-nav-btn{background:transparent;border:none;color:var(--lime);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:var(--rs);transition:background .15s;line-height:1}
+.month-nav-btn:active{background:var(--lime-bg)}
+.month-nav-label{font-size:15px;font-weight:700;letter-spacing:-.3px}
+
+/* WALLET CARDS */
+.wallet-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;overflow:hidden}
+.wallet-card:active{border-color:var(--lime-border)}
+
+.wallet-card-top{display:flex;align-items:flex-start;justify-content:space-between}
+.wallet-name{font-size:16px;font-weight:700}
+.wallet-currency-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--s4);color:var(--text2);letter-spacing:.5px}
+.wallet-balance{font-size:30px;font-weight:800;letter-spacing:-1.5px;margin:10px 0 2px;color:var(--lime)}
+.wallet-balance-sub{font-size:11px;color:var(--text3)}
+.wallet-dots{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 6px;border-radius:6px}
+
+/* SAVINGS HERO */
+.savings-hero{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:24px 20px;margin-bottom:16px;text-align:center;overflow:hidden}
+
+.savings-total-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text2)}
+.savings-total-val{font-size:42px;font-weight:800;letter-spacing:-2px;color:var(--lime);margin:6px 0 4px;line-height:1}
+.savings-total-sub{font-size:12px;color:var(--text3)}
+
+/* WALLET DETAIL (slide-in panel) */
+.panel{position:fixed;inset:0;z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);background:var(--bg);display:flex;flex-direction:column}
+.panel.open{transform:translateX(0)}
+.panel-bar{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.panel-back{background:transparent;border:none;color:var(--lime);font-size:22px;cursor:pointer;padding:4px;line-height:1}
+.panel-title{font-size:16px;font-weight:700;flex:1}
+.panel-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+
+/* HISTORY */
+.history-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.history-card:active{border-color:var(--lime-border)}
+.history-month{font-size:16px;font-weight:700;margin-bottom:10px}
+.history-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hstat{display:flex;flex-direction:column;gap:2px}
+.hstat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.hstat-val{font-size:13px;font-weight:700}
+
+/* CONFIG */
+.config-block{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.config-block-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:14px}
+
+/* FORMS */
+.form-group{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block}
+.form-input{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 12px;color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;outline:none;transition:border .15s;-webkit-appearance:none}
+.form-input:focus{border-color:var(--lime)}
+.form-input option{background:var(--s3)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--rs);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;cursor:pointer;border:none;transition:all .15s;letter-spacing:.3px}
+.btn:active{transform:scale(.97)}
+.btn-lime{background:var(--lime);color:#080808;padding:12px 20px;font-size:14px;width:100%}
+.btn-lime:active{background:var(--lime2)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:10px 16px;font-size:13px}
+.btn-ghost:active{background:var(--s3)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.2);padding:10px 16px;font-size:13px;width:100%}
+
+/* FILTER CHIPS */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-bottom:14px}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border2);background:var(--s2);color:var(--text2);white-space:nowrap;transition:all .15s;letter-spacing:.3px}
+.chip.active{background:var(--lime);color:#080808;border-color:var(--lime)}
+
+/* BOTTOM SHEET */
+.sheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;align-items:flex-end}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--s1);border-radius:var(--rl) var(--rl) 0 0;border:1px solid var(--border2);border-bottom:none;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 env(safe-area-inset-bottom)}
+.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:12px auto 0}
+.sheet-title{font-size:16px;font-weight:700;padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.sheet-body{padding:16px 20px 20px}
+.sheet-actions{display:flex;gap:8px;margin-top:16px}
+.sheet-actions .btn{flex:1}
+
+/* DROPDOWN MENU */
+.dropdown{position:fixed;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);min-width:160px;z-index:400;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.dropdown-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.dropdown-item:active{background:var(--s3)}
+.dropdown-item.danger{color:var(--red)}
+.dropdown-item .di{font-size:16px;width:18px}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;font-weight:600}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(var(--nav) + 16px);right:16px;width:52px;height:52px;border-radius:50%;background:var(--lime);color:#080808;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;box-shadow:0 4px 20px rgba(251,191,36,0.3);z-index:100;transition:transform .15s}
+.fab:active{transform:scale(.92)}
+.fab-mes{display:none}
+.fab-wallet{display:none}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:16px 0}
+
+/* MONO */
+.mono{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+
+/* WALLET TRANSACTION */
+.wtx{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px}
+.wtx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.wtx-client{font-size:14px;font-weight:700}
+.wtx-project{font-size:11px;color:var(--text2);margin-top:1px}
+.wtx-amount{font-size:15px;font-weight:800;color:var(--lime);letter-spacing:-.5px;text-align:right}
+.wtx-date{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* SCROLL REVEAL */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.page.active .card,.page.active .metric-tile,.page.active .hero-card,.page.active .metric-grid,.page.active .insight{animation:fadeUp .25s ease both}
+
+/* SAFE AREA */
+.content{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 16px)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">flow<span>.</span></div>
+    <div class="topbar-right">
+      <div class="topbar-month" id="topbar-month-label">Mayo 2026</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div style="padding-top:8px">
+        <div class="hero-card">
+          <div class="hero-label">Cobrado este mes</div>
+          <div class="hero-value mono" id="d-cobrado">$0 <span class="currency">USD</span></div>
+          <div class="hero-sub" id="d-cobrado-sub">0 ingresos abonados</div>
+          <div id="d-vs-badge" style="margin-top:6px"></div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-tile">
+            <div class="metric-tile-label">Facturado</div>
+            <div class="metric-tile-val mono" id="d-facturado" style="font-size:15px">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-sub">USD</div>
+          </div>
+          <div class="metric-tile">
+            <div class="metric-tile-label">Pendiente</div>
+            <div class="metric-tile-val mono" id="d-pendiente" style="font-size:15px;color:var(--amber)">$0</div>
+            <div class="metric-tile-sub" id="d-pendiente-sub">0 pagos</div>
+          </div>
+          <div class="metric-tile">
+            <div class="metric-tile-label">Proyectos</div>
+            <div class="metric-tile-val" id="d-proyectos">0</div>
+            <div class="metric-tile-sub" id="d-clientes-sub">este mes</div>
+          </div>
+          <div class="metric-tile">
+            <div class="metric-tile-label">Ahorros</div>
+            <div class="metric-tile-val mono" id="d-ahorros" style="font-size:15px;color:var(--lime)">$0</div>
+            <div class="metric-tile-sub">USD total</div>
+          </div>
+        </div>
+
+        <div class="insight" id="d-insight">Cargá tus primeros ingresos para ver el resumen del mes.</div>
+
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2)">Meta mensual</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text3)" id="goal-pct-label">0%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+            <span id="goal-cobrado-label" class="mono" style="font-size:14px;font-weight:700">$0 USD</span>
+            <span id="goal-meta-label" style="font-size:12px;color:var(--text3)">Meta: no configurada</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill" id="goal-bar" style="width:0%"></div></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px" id="goal-sub">Configurá tu meta en la pestaña Config.</div>
+        </div>
+
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px">VS. mes anterior</div>
+          <div class="mini-bars" id="prev-chart"></div>
+          <div class="mini-legend">
+            <span><span class="legend-dot" style="background:var(--s4)"></span><span style="font-size:11px;color:var(--text3)" id="prev-label">Anterior</span></span>
+            <span><span class="legend-dot" style="background:var(--lime);opacity:.85"></span><span style="font-size:11px;color:var(--text3)">Este mes</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AHORROS -->
+    <div class="page" id="page-ahorros">
+      <div style="padding-top:8px">
+        <div class="savings-hero">
+          <div class="savings-total-label">Ahorros totales</div>
+          <div class="savings-total-val mono" id="savings-total">$0</div>
+          <div class="savings-total-sub" id="savings-sub">equivalente en USD</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:13px;font-weight:700;color:var(--text2)">Mis wallets</span>
+        </div>
+        <div id="wallets-list"></div>
+      </div>
+    </div>
+
+    <!-- MES ACTUAL -->
+    <div class="page" id="page-mes">
+      <div style="padding-top:8px">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeViewMonth(-1)">‹</button>
+          <div class="month-nav-label" id="view-month-label">Mayo 2026</div>
+          <button class="month-nav-btn" onclick="changeViewMonth(1)">›</button>
+        </div>
+        <div class="chips" id="filter-chips">
+          <div class="chip active" onclick="setFilter('todos',this)">Todos</div>
+          <div class="chip" onclick="setFilter('pendiente',this)">Pendientes</div>
+          <div class="chip" onclick="setFilter('abonado',this)">Abonados</div>
+          <div class="chip" onclick="setFilter('usd',this)">USD</div>
+          <div class="chip" onclick="setFilter('ars',this)">ARS</div>
+        </div>
+        <div class="inc-list" id="income-list"></div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="page" id="page-historial">
+      <div style="padding-top:8px">
+        <div class="sh"><div class="sh-title">Historial</div><div class="sh-sub">Todos los meses registrados</div></div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="page" id="page-config">
+      <div style="padding-top:8px">
+        <div class="sh"><div class="sh-title">Configuración</div></div>
+
+        <div class="config-block">
+          <div class="config-block-title">Tipo de cambio</div>
+          <div class="form-group">
+            <label class="form-label">USD → ARS</label>
+            <input class="form-input mono" type="number" id="cfg-rate" placeholder="1050" inputmode="decimal">
+          </div>
+          <button class="btn btn-ghost" style="width:100%" onclick="saveRate()">Guardar tipo de cambio</button>
+        </div>
+
+        <div class="config-block">
+          <div class="config-block-title">Meta mensual</div>
+          <div class="form-group">
+            <label class="form-label">Monto en USD</label>
+            <input class="form-input mono" type="number" id="cfg-goal" placeholder="3000" inputmode="decimal">
+          </div>
+          <button class="btn btn-ghost" style="width:100%" onclick="saveGoal()">Guardar meta</button>
+        </div>
+
+        <div class="config-block" style="border-color:rgba(251,191,36,0.2)">
+          <div class="config-block-title" style="color:var(--lime)">Google Sheets</div>
+          <div class="form-group">
+            <label class="form-label">URL del Web App</label>
+            <input class="form-input" id="cfg-sheets-url" placeholder="https://script.google.com/macros/s/..." autocomplete="off" autocorrect="off" autocapitalize="none">
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">Pegá la URL de tu Google Apps Script desplegado como Web App.</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="saveSheetUrl()">Guardar URL</button>
+            <button class="btn" id="btn-sync" style="width:100%;background:var(--lime-bg);color:var(--lime);border:1px solid var(--lime-border);justify-content:center;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;padding:12px" onclick="syncToSheets()">
+              <span id="sync-icon">↑</span> Sincronizar ahora
+            </button>
+            <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="syncFromSheets()">↓ Importar desde Sheets</button>
+          </div>
+          <div id="sync-status" style="margin-top:10px;font-size:12px;display:none"></div>
+        </div>
+
+        <div class="config-block" style="border-color:rgba(248,113,113,0.15)">
+          <div class="config-block-title" style="color:var(--red)">Zona peligrosa</div>
+          <button class="btn btn-danger" onclick="clearAll()">Borrar todos los datos</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottomnav">
+    <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">◈</span>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-item" onclick="showPage('ahorros')" id="nav-ahorros">
+      <span class="nav-icon">◎</span>
+      <span>Ahorros</span>
+    </button>
+    <button class="nav-item" onclick="showPage('mes')" id="nav-mes">
+      <span class="nav-icon">⊕</span>
+      <span>Mes</span>
+    </button>
+    <button class="nav-item" onclick="showPage('historial')" id="nav-historial">
+      <span class="nav-icon">≡</span>
+      <span>Historial</span>
+    </button>
+    <button class="nav-item" onclick="showPage('config')" id="nav-config">
+      <span class="nav-icon">⊙</span>
+      <span>Config.</span>
+    </button>
+  </div>
+</div><!-- /app -->
+
+<!-- FAB -->
+<button class="fab fab-mes" id="fab-mes" onclick="openIncomeSheet(null)">+</button>
+<button class="fab fab-wallet" id="fab-wallet" onclick="openWalletSheet(null)">+</button>
+
+<!-- WALLET PANEL (slide-in) -->
+<div class="panel" id="wallet-panel">
+  <div class="panel-bar">
+    <button class="panel-back" onclick="closePanel()">‹</button>
+    <div class="panel-title" id="panel-wallet-name">Wallet</div>
+    <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="editCurrentWallet()">Editar</button>
+  </div>
+  <div class="panel-content" id="panel-wallet-body"></div>
+</div>
+
+<!-- INCOME BOTTOM SHEET -->
+<div class="sheet-bg" id="sheet-income">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="income-sheet-title">Nuevo ingreso</div>
+    <div class="sheet-body">
+      <input type="hidden" id="income-edit-id">
+      <div class="form-group">
+        <label class="form-label">Cliente</label>
+        <input class="form-input" id="f-cliente" placeholder="Nombre del cliente" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proyecto</label>
+        <input class="form-input" id="f-proyecto" placeholder="Descripción del proyecto" autocomplete="off">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Precio</label>
+          <input class="form-input mono" type="number" id="f-precio" placeholder="0" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda</label>
+          <select class="form-input" id="f-moneda">
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Wallet</label>
+        <select class="form-input" id="f-wallet"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-input" id="f-estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="abonado">Abonado</option>
+        </select>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" onclick="closeSheet('sheet-income')">Cancelar</button>
+        <button class="btn btn-lime" onclick="saveIncome()" style="flex:2">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET BOTTOM SHEET -->
+<div class="sheet-bg" id="sheet-wallet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="wallet-sheet-title">Nueva wallet</div>
+    <div class="sheet-body">
+      <input type="hidden" id="wallet-edit-id">
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="w-nombre" placeholder="Ej: Binance, Mercado Pago" autocomplete="off">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Saldo</label>
+          <input class="form-input mono" type="number" id="w-saldo" placeholder="0" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda</label>
+          <select class="form-input" id="w-moneda">
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+          </select>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" onclick="closeSheet('sheet-wallet')">Cancelar</button>
+        <button class="btn btn-lime" onclick="saveWallet()" style="flex:2">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DROPDOWN MENU -->
+<div class="dropdown" id="dropdown" style="display:none"></div>
+<div id="dropdown-bg" style="display:none;position:fixed;inset:0;z-index:399" onclick="closeDropdown()"></div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────
+const S={
+  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+};
+
+let state={
+  incomes:[],
+  wallets:[],
+  rate:1050,
+  goal:0,
+  filter:'todos',
+  viewMonth:currentYM(),
+  currentPage:'dashboard',
+  currentWalletId:null,
+  sheetsUrl:''
+};
+
+function load(){
+  state.incomes=S.get('fl_inc')||[];
+  state.wallets=S.get('fl_wal')||[
+    {id:'w1',name:'Binance',balance:0,currency:'USD'},
+    {id:'w2',name:'Mercado Pago',balance:0,currency:'ARS'},
+    {id:'w3',name:'Efectivo',balance:0,currency:'USD'}
+  ];
+  state.rate=S.get('fl_rate')||1050;
+  state.goal=S.get('fl_goal')||0;
+  state.sheetsUrl=S.get('fl_sheets_url')||'';
+}
+function save(){
+  S.set('fl_inc',state.incomes);
+  S.set('fl_wal',state.wallets);
+  S.set('fl_rate',state.rate);
+  S.set('fl_goal',state.goal);
+  S.set('fl_sheets_url',state.sheetsUrl||'');
+}
+
+// ── UTILS ────────────────────────────────────────────────
+function currentYM(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function ymToDate(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1)}
+function prevYM(ym){const d=ymToDate(ym);d.setMonth(d.getMonth()-1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function nextYM(ym){const d=ymToDate(ym);d.setMonth(d.getMonth()+1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function ymLabel(ym){const[y,m]=ym.split('-');return MONTHS[+m-1]+' '+y}
+function incYM(inc){return (inc.date||currentYM()).slice(0,7)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function toUSD(amt,cur){return cur==='USD'?amt:amt/state.rate}
+function fmtAmt(amt,cur){
+  const n=Number(amt).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  return '$'+n+(cur?' '+cur:'');
+}
+function fmtUSD(amt){return '$'+Number(amt).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})+' USD'}
+
+function calcMonth(ym){
+  const inc=state.incomes.filter(i=>incYM(i)===ym);
+  const facturado=inc.reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
+  const cobrado=inc.filter(i=>i.status==='abonado').reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
+  const pendiente=inc.filter(i=>i.status==='pendiente').reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
+  const clients=[...new Set(inc.map(i=>i.client).filter(Boolean))].length;
+  return{facturado,cobrado,pendiente,clients,count:inc.length,pending:inc.filter(i=>i.status==='pendiente').length};
+}
+
+// ── PAGES ─────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  state.currentPage=id;
+  document.getElementById('fab-mes').style.display=id==='mes'?'flex':'none';
+  document.getElementById('fab-wallet').style.display=id==='ahorros'?'flex':'none';
+  renderAll();
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function renderAll(){
+  renderDash();
+  renderWallets();
+  renderIncomes();
+  renderHistory();
+  renderConfig();
+  updateTopbar();
+}
+
+function updateTopbar(){
+  document.getElementById('topbar-month-label').textContent=ymLabel(currentYM());
+}
+
+function renderDash(){
+  const cm=currentYM(),pm=prevYM(cm);
+  const cur=calcMonth(cm),prev=calcMonth(pm);
+  const ahorros=state.wallets.reduce((s,w)=>s+toUSD(w.balance,w.currency),0);
+
+  document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.cobrado),'')+'<span class="currency"> USD</span>';
+  document.getElementById('d-cobrado-sub').textContent=cur.count-cur.pending+' ingreso'+(cur.count-cur.pending!==1?'s':'')+' abonado'+(cur.count-cur.pending!==1?'s':'');
+  document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturado),'');
+  document.getElementById('d-facturado-sub').textContent='USD';
+  document.getElementById('d-pendiente').textContent=fmtAmt(Math.round(cur.pendiente),'');
+  document.getElementById('d-pendiente-sub').textContent=cur.pending+' pago'+(cur.pending!==1?'s':'');
+  document.getElementById('d-proyectos').textContent=cur.count;
+  document.getElementById('d-clientes-sub').textContent=cur.clients+' cliente'+(cur.clients!==1?'s':'');
+  document.getElementById('d-ahorros').textContent=fmtAmt(Math.round(ahorros),'');
+
+  const badge=document.getElementById('d-vs-badge');
+  if(prev.cobrado>0){
+    const diff=cur.cobrado-prev.cobrado;
+    const pct=Math.abs(Math.round((diff/prev.cobrado)*100));
+    badge.innerHTML=diff>=0
+      ?`<span class="hero-badge up">↑ ${pct}% vs mes anterior</span>`
+      :`<span class="hero-badge down">↓ ${pct}% vs mes anterior</span>`;
+  }else badge.innerHTML='';
+
+  let ins='';
+  if(cur.cobrado===0&&cur.facturado===0){
+    ins='Cargá tus primeros ingresos para ver el resumen del mes.';
+  }else{
+    const pts=[];
+    pts.push('Este mes llevás <b>'+fmtUSD(Math.round(cur.cobrado))+'</b> cobrados.');
+    if(prev.cobrado>0){
+      const diff=prev.cobrado-cur.cobrado;
+      if(diff>0)pts.push('Te faltan <b>'+fmtUSD(Math.round(diff))+'</b> para superar '+ymLabel(pm)+'.');
+      else pts.push('¡Ya <b>superaste</b> el mes anterior por <b>'+fmtUSD(Math.round(-diff))+'</b>!');
+    }
+    if(state.goal>0){
+      const falta=state.goal-cur.cobrado;
+      if(falta>0)pts.push('Te faltan <b>'+fmtUSD(Math.round(falta))+'</b> para tu meta de '+fmtUSD(state.goal)+'.');
+      else pts.push('🎯 <b>Meta mensual alcanzada.</b>');
+    }
+    ins=pts.join(' ');
+  }
+  document.getElementById('d-insight').innerHTML=ins;
+
+  if(state.goal>0){
+    const pct=Math.min(100,Math.round((cur.cobrado/state.goal)*100));
+    document.getElementById('goal-bar').style.width=pct+'%';
+    document.getElementById('goal-meta-label').textContent='Meta: '+fmtUSD(state.goal);
+    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.cobrado));
+    document.getElementById('goal-pct-label').textContent=pct+'%';
+    const falta=state.goal-cur.cobrado;
+    document.getElementById('goal-sub').textContent=pct+'% completado'+(falta>0?' · Faltan '+fmtUSD(Math.round(falta)):' · ¡Meta alcanzada!');
+  }else{
+    document.getElementById('goal-bar').style.width='0%';
+    document.getElementById('goal-meta-label').textContent='Meta: no configurada';
+    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.cobrado));
+    document.getElementById('goal-pct-label').textContent='—';
+    document.getElementById('goal-sub').textContent='Configurá tu meta en la pestaña Config.';
+  }
+
+  document.getElementById('prev-label').textContent=ymLabel(pm);
+  const maxV=Math.max(prev.facturado,cur.facturado,prev.cobrado,cur.cobrado,1);
+  const cats=[{l:'Fact.',pv:prev.facturado,cv:cur.facturado},{l:'Cob.',pv:prev.cobrado,cv:cur.cobrado},{l:'Pend.',pv:prev.pendiente,cv:cur.pendiente}];
+  document.getElementById('prev-chart').innerHTML=cats.map(c=>{
+    const ph=Math.round((c.pv/maxV)*40)||2,ch=Math.round((c.cv/maxV)*40)||2;
+    return `<div class="mbar-group"><div class="mbar prev" style="height:${ph}px;flex:1"></div><div class="mbar cur" style="height:${ch}px;flex:1"></div></div>`;
+  }).join('')+cats.map(c=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--text3);margin-top:4px;position:absolute;bottom:-16px">${c.l}</div>`).join('');
+}
+
+function renderWallets(){
+  const el=document.getElementById('wallets-list');
+  const total=state.wallets.reduce((s,w)=>s+toUSD(w.balance,w.currency),0);
+  document.getElementById('savings-total').textContent=fmtAmt(Math.round(total),'');
+  document.getElementById('savings-sub').textContent=state.wallets.length+' wallet'+(state.wallets.length!==1?'s':'')+' · TC: $'+state.rate+' ARS/USD';
+  if(state.wallets.length===0){el.innerHTML='<div class="empty">No hay wallets. Tocá + para agregar.</div>';return;}
+  el.innerHTML=state.wallets.map(w=>`
+    <div class="wallet-card" onclick="openWalletPanel('${w.id}')">
+      <div class="wallet-card-left">
+        <div class="wallet-name">${escH(w.name)}</div>
+        <div class="wallet-currency-badge">${w.currency}</div>
+      </div>
+      <div class="wallet-card-right">
+        <div class="wallet-balance">${fmtAmt(w.balance,w.currency)}</div>
+        ${w.currency==='ARS'?`<div class="wallet-balance-sub">≈ ${fmtUSD(Math.round(toUSD(w.balance,w.currency)))}</div>`:''}
+      </div>
+      <button class="wallet-dots" onclick="event.stopPropagation();walletMenu('${w.id}',this)" aria-label="Opciones">•••</button>
+    </div>`).join('');
+}
+
+function renderIncomes(){
+  const el=document.getElementById('income-list');
+  document.getElementById('view-month-label').textContent=ymLabel(state.viewMonth);
+  let inc=state.incomes.filter(i=>incYM(i)===state.viewMonth);
+  if(state.filter==='pendiente')inc=inc.filter(i=>i.status==='pendiente');
+  else if(state.filter==='abonado')inc=inc.filter(i=>i.status==='abonado');
+  else if(state.filter==='usd')inc=inc.filter(i=>i.currency==='USD');
+  else if(state.filter==='ars')inc=inc.filter(i=>i.currency==='ARS');
+  inc.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(inc.length===0){el.innerHTML='<div class="empty">No hay ingresos en este mes.</div>';return;}
+  el.innerHTML=inc.map(i=>{
+    const wName=state.wallets.find(w=>w.id===i.walletId)?.name||'—';
+    return `<div class="inc-card">
+      <div class="inc-card-top">
+        <div><div class="inc-client">${escH(i.client)}</div><div class="inc-project">${escH(i.project)} · ${escH(wName)}</div></div>
+        <div>
+          <div class="inc-amount ${i.currency.toLowerCase()}">${fmtAmt(i.amount,i.currency)}</div>
+          <button class="inc-dots-btn" onclick="incomeMenu('${i.id}',this)" style="margin-top:6px;width:100%" aria-label="Opciones">•••</button>
+        </div>
+      </div>
+      <div class="inc-meta">
+        <span class="badge ${i.currency.toLowerCase()}">${i.currency}</span>
+        <span class="badge ${i.status}">${i.status==='abonado'?'Abonado':'Pendiente'}</span>
+        ${i.date?`<span style="font-size:11px;color:var(--text3)">${i.date}</span>`:''}
+        ${i.paidDate&&i.status==='abonado'?`<span style="font-size:11px;color:var(--green)">Cobrado ${i.paidDate}</span>`:''}
+      </div>
+      ${i.status==='pendiente'?`<div class="inc-actions"><button class="btn-pay" onclick="markPaid('${i.id}')">✓ Marcar como abonado</button></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  const months=[...new Set(state.incomes.map(i=>incYM(i)))].sort().reverse();
+  if(months.length===0){el.innerHTML='<div class="empty">No hay historial disponible.</div>';return;}
+  el.innerHTML=months.map(ym=>{
+    const d=calcMonth(ym);
+    return `<div class="history-card" onclick="goToMonth('${ym}')">
+      <div class="history-month">${ymLabel(ym)}</div>
+      <div class="history-stats">
+        <div class="hstat"><div class="hstat-label">Facturado</div><div class="hstat-val mono">${fmtUSD(Math.round(d.facturado))}</div></div>
+        <div class="hstat"><div class="hstat-label">Cobrado</div><div class="hstat-val mono" style="color:var(--green)">${fmtUSD(Math.round(d.cobrado))}</div></div>
+        <div class="hstat"><div class="hstat-label">Pendiente</div><div class="hstat-val mono" style="color:var(--amber)">${fmtUSD(Math.round(d.pendiente))}</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">${d.count} ingreso${d.count!==1?'s':''} · ${d.clients} cliente${d.clients!==1?'s':''} → Ver ingresos ›</div>
+    </div>`;
+  }).join('');
+}
+
+function goToMonth(ym){
+  state.viewMonth=ym;
+  showPage('mes');
+}
+
+function renderConfig(){
+  document.getElementById('cfg-rate').value=state.rate;
+  document.getElementById('cfg-goal').value=state.goal||'';
+  document.getElementById('cfg-sheets-url').value=state.sheetsUrl||'';
+}
+
+// ── MONTH NAV ─────────────────────────────────────────────
+function changeViewMonth(dir){
+  state.viewMonth=dir===-1?prevYM(state.viewMonth):nextYM(state.viewMonth);
+  renderIncomes();
+}
+
+// ── WALLET PANEL ──────────────────────────────────────────
+function openWalletPanel(id){
+  const w=state.wallets.find(x=>x.id===id);
+  if(!w)return;
+  state.currentWalletId=id;
+  document.getElementById('panel-wallet-name').textContent=w.name;
+  const txs=state.incomes.filter(i=>i.walletId===id&&i.status==='abonado').sort((a,b)=>(b.paidDate||b.date||'').localeCompare(a.paidDate||a.date||''));
+  const totalIncoming=txs.reduce((s,i)=>s+i.amount,0);
+  let html=`<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:6px">Saldo actual</div>
+    <div class="mono" style="font-size:28px;font-weight:800;color:var(--lime);letter-spacing:-1px">${fmtAmt(w.balance,w.currency)}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">${txs.length} pago${txs.length!==1?'s':''} cobrado${txs.length!==1?'s':''} · Total sumado: ${fmtAmt(Math.round(totalIncoming),w.currency)}</div>
+  </div>`;
+  if(txs.length===0){html+='<div class="empty">Todavía no hay pagos cobrados en esta wallet.</div>';}
+  else{
+    html+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px">Pagos recibidos</div>';
+    html+=txs.map(i=>`<div class="wtx">
+      <div class="wtx-top">
+        <div><div class="wtx-client">${escH(i.client)}</div><div class="wtx-project">${escH(i.project)}</div></div>
+        <div class="wtx-amount mono">${fmtAmt(i.amount,i.currency)}</div>
+      </div>
+      <div class="wtx-date">${i.paidDate||i.date||'—'}</div>
+    </div>`).join('');
+  }
+  document.getElementById('panel-wallet-body').innerHTML=html;
+  document.getElementById('wallet-panel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('wallet-panel').classList.remove('open');
+  state.currentWalletId=null;
+}
+function editCurrentWallet(){
+  closePanel();
+  setTimeout(()=>openWalletSheet(state.currentWalletId||null),300);
+}
+
+// ── SHEETS ────────────────────────────────────────────────
+function openIncomeSheet(id){
+  document.getElementById('sheet-income').classList.add('open');
+  if(id){
+    const inc=state.incomes.find(i=>i.id===id);
+    if(!inc)return;
+    document.getElementById('income-edit-id').value=id;
+    document.getElementById('income-sheet-title').textContent='Editar ingreso';
+    document.getElementById('f-cliente').value=inc.client;
+    document.getElementById('f-proyecto').value=inc.project;
+    document.getElementById('f-precio').value=inc.amount;
+    document.getElementById('f-moneda').value=inc.currency;
+    document.getElementById('f-estado').value=inc.status;
+    fillWalletSel(inc.walletId);
+  }else{
+    document.getElementById('income-edit-id').value='';
+    document.getElementById('income-sheet-title').textContent='Nuevo ingreso';
+    document.getElementById('f-cliente').value='';
+    document.getElementById('f-proyecto').value='';
+    document.getElementById('f-precio').value='';
+    document.getElementById('f-moneda').value='USD';
+    document.getElementById('f-estado').value='pendiente';
+    fillWalletSel('');
+  }
+}
+function openWalletSheet(id){
+  document.getElementById('sheet-wallet').classList.add('open');
+  if(id){
+    const w=state.wallets.find(x=>x.id===id);
+    if(!w)return;
+    document.getElementById('wallet-edit-id').value=id;
+    document.getElementById('wallet-sheet-title').textContent='Editar wallet';
+    document.getElementById('w-nombre').value=w.name;
+    document.getElementById('w-saldo').value=w.balance;
+    document.getElementById('w-moneda').value=w.currency;
+  }else{
+    document.getElementById('wallet-edit-id').value='';
+    document.getElementById('wallet-sheet-title').textContent='Nueva wallet';
+    document.getElementById('w-nombre').value='';
+    document.getElementById('w-saldo').value='';
+    document.getElementById('w-moneda').value='USD';
+  }
+}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+
+function fillWalletSel(sel){
+  const s=document.getElementById('f-wallet');
+  s.innerHTML=state.wallets.length
+    ?state.wallets.map(w=>`<option value="${w.id}" ${w.id===sel?'selected':''}>${escH(w.name)} (${w.currency})</option>`).join('')
+    :'<option value="">Sin wallets</option>';
+}
+
+// ── DROPDOWN MENUS ────────────────────────────────────────
+function showDropdown(items,btn){
+  const dd=document.getElementById('dropdown');
+  const rect=btn.getBoundingClientRect();
+  dd.innerHTML=items.map(it=>`<button class="dropdown-item${it.danger?' danger':''}" onclick="${it.action}"><span class="di">${it.icon}</span>${escH(it.label)}</button>`).join('');
+  const top=rect.bottom+4;
+  const right=window.innerWidth-rect.right;
+  dd.style.cssText=`top:${top}px;right:${right}px;display:block`;
+  document.getElementById('dropdown-bg').style.display='block';
+}
+function closeDropdown(){
+  document.getElementById('dropdown').style.display='none';
+  document.getElementById('dropdown-bg').style.display='none';
+}
+
+function incomeMenu(id,btn){
+  const inc=state.incomes.find(i=>i.id===id);
+  if(!inc)return;
+  const items=[
+    {icon:'✎',label:'Editar',action:`closeDropdown();openIncomeSheet('${id}')`},
+    ...(inc.status==='pendiente'?[{icon:'✓',label:'Marcar abonado',action:`closeDropdown();markPaid('${id}')`}]:[]),
+    {icon:'✕',label:'Eliminar',danger:true,action:`closeDropdown();deleteIncome('${id}')`}
+  ];
+  showDropdown(items,btn);
+}
+
+function walletMenu(id,btn){
+  const items=[
+    {icon:'✎',label:'Editar',action:`closeDropdown();openWalletSheet('${id}')`},
+    {icon:'✕',label:'Eliminar',danger:true,action:`closeDropdown();deleteWallet('${id}')`}
+  ];
+  showDropdown(items,btn);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────
+function saveIncome(){
+  const id=document.getElementById('income-edit-id').value;
+  const cliente=document.getElementById('f-cliente').value.trim();
+  const proyecto=document.getElementById('f-proyecto').value.trim();
+  const precio=parseFloat(document.getElementById('f-precio').value)||0;
+  const moneda=document.getElementById('f-moneda').value;
+  const walletId=document.getElementById('f-wallet').value;
+  const estado=document.getElementById('f-estado').value;
+  if(!cliente||precio<=0){alert('Completá cliente y precio.');return;}
+
+  if(id){
+    const prev=state.incomes.find(i=>i.id===id);
+    // revert wallet if was paid
+    if(prev&&prev.status==='abonado'){
+      const ow=state.wallets.find(w=>w.id===prev.walletId);
+      if(ow)ow.balance=Math.max(0,ow.balance-prev.amount);
+    }
+    state.incomes=state.incomes.map(i=>i.id===id?{...i,client:cliente,project:proyecto,amount:precio,currency:moneda,walletId,status:estado,paidDate:estado==='abonado'?(i.paidDate||new Date().toISOString().slice(0,10)):null}:i);
+    if(estado==='abonado'){
+      const nw=state.wallets.find(w=>w.id===walletId);
+      if(nw)nw.balance+=precio;
+    }
+  }else{
+    const ni={id:uid(),client:cliente,project:proyecto,amount:precio,currency:moneda,walletId,status:estado,date:state.viewMonth+'-01',paidDate:estado==='abonado'?new Date().toISOString().slice(0,10):null};
+    // use actual today's date for the month
+    ni.date=new Date().toISOString().slice(0,10);
+    // but set the month based on viewMonth
+    if(state.viewMonth!==currentYM())ni.date=state.viewMonth+'-01';
+    state.incomes.push(ni);
+    if(estado==='abonado'){
+      const nw=state.wallets.find(w=>w.id===walletId);
+      if(nw)nw.balance+=precio;
+    }
+  }
+  save();closeSheet('sheet-income');renderAll();
+}
+
+function markPaid(id){
+  const inc=state.incomes.find(i=>i.id===id);
+  if(!inc||inc.status==='abonado')return;
+  inc.status='abonado';
+  inc.paidDate=new Date().toISOString().slice(0,10);
+  const w=state.wallets.find(x=>x.id===inc.walletId);
+  if(w)w.balance+=inc.amount;
+  save();renderAll();
+}
+
+function deleteIncome(id){
+  const inc=state.incomes.find(i=>i.id===id);
+  if(!inc)return;
+  if(!confirm('¿Eliminar este ingreso?'))return;
+  if(inc.status==='abonado'){
+    const w=state.wallets.find(x=>x.id===inc.walletId);
+    if(w)w.balance=Math.max(0,w.balance-inc.amount);
+  }
+  state.incomes=state.incomes.filter(i=>i.id!==id);
+  save();renderAll();
+}
+
+function saveWallet(){
+  const id=document.getElementById('wallet-edit-id').value;
+  const nombre=document.getElementById('w-nombre').value.trim();
+  const saldo=parseFloat(document.getElementById('w-saldo').value)||0;
+  const moneda=document.getElementById('w-moneda').value;
+  if(!nombre){alert('Ingresá un nombre.');return;}
+  if(id){
+    state.wallets=state.wallets.map(w=>w.id===id?{...w,name:nombre,balance:saldo,currency:moneda}:w);
+  }else{
+    state.wallets.push({id:uid(),name:nombre,balance:saldo,currency:moneda});
+  }
+  save();closeSheet('sheet-wallet');renderAll();
+}
+
+function deleteWallet(id){
+  if(!confirm('¿Eliminar esta wallet?'))return;
+  state.wallets=state.wallets.filter(w=>w.id!==id);
+  save();renderAll();
+}
+
+function setFilter(f,el){
+  state.filter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderIncomes();
+}
+
+function saveRate(){
+  const v=parseFloat(document.getElementById('cfg-rate').value);
+  if(v>0){state.rate=v;save();renderAll();alert('TC guardado: $'+state.rate+' ARS');}
+}
+function saveGoal(){
+  const v=parseFloat(document.getElementById('cfg-goal').value)||0;
+  state.goal=v;save();renderAll();
+  alert('Meta guardada: '+fmtUSD(state.goal));
+}
+function saveSheetUrl(){
+  const v=document.getElementById('cfg-sheets-url').value.trim();
+  state.sheetsUrl=v;
+  save();
+  setSyncStatus(v?'URL guardada ✓':'URL eliminada','ok');
+}
+
+function setSyncStatus(msg,type){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  el.style.display='block';
+  el.style.color=type==='ok'?'var(--green)':type==='error'?'var(--red)':'var(--text2)';
+  el.textContent=msg;
+  if(type!=='loading')setTimeout(()=>{el.style.display='none'},4000);
+}
+
+async function syncToSheets(){
+  if(!state.sheetsUrl){alert('Primero guardá la URL del Web App.');return;}
+  const btn=document.getElementById('btn-sync');
+  const icon=document.getElementById('sync-icon');
+  btn.disabled=true;
+  icon.textContent='…';
+  setSyncStatus('Sincronizando...','loading');
+  try{
+    const payload=JSON.stringify({action:'sync_all',incomes:state.incomes,wallets:state.wallets,rate:state.rate});
+    // Use no-cors mode to avoid CORS issues with local files
+    // We send via a form POST trick with an iframe to handle the response
+    const resp=await fetch(state.sheetsUrl,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:payload
+    });
+    // no-cors returns opaque response, so we can't read it but if no exception = success
+    setSyncStatus('Sincronizado correctamente ✓','ok');
+  }catch(e){
+    setSyncStatus('Error de conexión: '+e.message,'error');
+  }finally{
+    btn.disabled=false;
+    icon.textContent='↑';
+  }
+}
+
+async function syncFromSheets(){
+  if(!state.sheetsUrl){alert('Primero guardá la URL del Web App.');return;}
+  if(!confirm('¿Importar datos desde Google Sheets? Esto reemplazará los datos locales.'))return;
+  setSyncStatus('Importando...','loading');
+  try{
+    // For GET requests, use a script tag trick to bypass CORS
+    const url=state.sheetsUrl+'?callback=flowCallback&ts='+Date.now();
+    window._flowImportResolve=null;
+    const p=new Promise((res,rej)=>{
+      window.flowCallback=function(data){res(data);};
+      const s=document.createElement('script');
+      s.src=url;
+      s.onerror=()=>rej(new Error('Error cargando datos'));
+      setTimeout(()=>rej(new Error('Timeout')),10000);
+      document.head.appendChild(s);
+      setTimeout(()=>document.head.removeChild(s),11000);
+    });
+    // Try normal fetch first (works if opened via server/drive)
+    try{
+      const resp=await fetch(state.sheetsUrl+'?ts='+Date.now());
+      const data=await resp.json();
+      if(data.ok){
+        if(data.incomes)state.incomes=data.incomes;
+        if(data.wallets)state.wallets=data.wallets;
+        save();renderAll();
+        setSyncStatus('Importado correctamente ✓','ok');
+        return;
+      }
+    }catch(e2){}
+    setSyncStatus('Para importar, abrí la app desde Google Drive o un servidor.','error');
+  }catch(e){
+    setSyncStatus('Error: '+e.message,'error');
+  }
+}
+
+function clearAll(){
+  if(!confirm('¿Borrar TODOS los datos?'))return;
+  state={incomes:[],wallets:[],rate:1050,goal:0,filter:'todos',viewMonth:currentYM(),currentPage:'dashboard',currentWalletId:null};
+  save();showPage('dashboard');
+}
+
+// close sheets on bg tap
+document.querySelectorAll('.sheet-bg').forEach(sb=>{
+  sb.addEventListener('click',e=>{if(e.target===sb)sb.classList.remove('open');});
+});
+
+// init
+load();
+state.viewMonth=currentYM();
+renderAll();
+</script>
+</body>
+</html>
