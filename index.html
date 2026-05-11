@@ -671,6 +671,7 @@ function saveLocal(){
 function save(){
   saveLocal();
   if(currentUser) saveToSupabase();
+  autoSync();
 }
 
 async function saveToSupabase(){
