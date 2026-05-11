@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>nari. — finanzas personales</title>
+<title>Nari — finanzas personales</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -46,7 +46,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 /* TOP BAR */
 .topbar{padding:16px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg)}
 .topbar-logo{font-size:20px;font-weight:800;letter-spacing:-1px}
-.topbar-logo span{color:var(--lime)}
+
 .topbar-right{display:flex;align-items:center;gap:8px}
 .topbar-month{font-size:12px;font-weight:600;color:var(--text2);background:var(--s3);padding:5px 10px;border-radius:20px;letter-spacing:.3px}
 
@@ -236,15 +236,61 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 /* SAFE AREA */
 .content{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 16px)}
 </style>
+<style>
+/* AUTH SCREEN */
+.auth-screen{position:fixed;inset:0;background:#080808;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.auth-logo{font-size:36px;font-weight:700;letter-spacing:-2px;margin-bottom:8px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+
+.auth-sub{font-size:13px;color:#555;margin-bottom:40px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.auth-card{width:100%;max-width:360px;background:#111;border:1px solid #2a2a2a;border-radius:16px;padding:24px}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;background:#0f0f0f;border-radius:8px;padding:3px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:all .2s;border:none;background:none;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.auth-tab.active{background:#1c1c1c;color:#f2f2f2}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-input{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;color:#f2f2f2;font-size:15px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;outline:none;transition:border .15s;width:100%}
+.auth-input:focus{border-color:#FBBF24}
+.auth-btn{background:#FBBF24;color:#080808;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;width:100%;margin-top:4px;transition:background .15s}
+.auth-btn:active{background:#F59E0B}
+.auth-btn:disabled{background:#555;color:#888;cursor:default}
+.auth-error{font-size:12px;color:#f87171;text-align:center;min-height:16px}
+.auth-forgot{font-size:12px;color:#555;text-align:center;cursor:pointer;margin-top:4px}
+.auth-forgot:hover{color:#FBBF24}
+.auth-loading{display:flex;align-items:center;justify-content:center;gap:8px;color:#555;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.spinner{width:18px;height:18px;border:2px solid #333;border-top-color:#FBBF24;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.user-badge{font-size:11px;color:#555;padding:4px 10px;background:#111;border-radius:20px;cursor:pointer}
+.user-badge:hover{color:#f2f2f2}
+</style>
 </head>
 <body>
-<div class="app">
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-logo">nari<span style="color:#FBBF24">.</span></div>
+  <div class="auth-sub">tus finanzas, siempre con vos</div>
+  <div id="auth-loading" class="auth-loading"><div class="spinner"></div> Cargando...</div>
+  <div id="auth-card" class="auth-card" style="display:none">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registrarme</button>
+    </div>
+    <div class="auth-form">
+      <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email" autocapitalize="none">
+      <input class="auth-input" type="password" id="auth-password" placeholder="Contraseña" autocomplete="current-password">
+      <div class="auth-error" id="auth-error"></div>
+      <button class="auth-btn" id="auth-submit-btn" onclick="authSubmit()">Entrar</button>
+      <div class="auth-forgot" id="auth-forgot" onclick="forgotPassword()">¿Olvidaste tu contraseña?</div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">nari<span>.</span></div>
+    <div class="topbar-logo">nari<span style="color:#FBBF24">.</span></div>
     <div class="topbar-right">
       <div class="topbar-month" id="topbar-month-label" style="display:none"></div>
+      <div class="user-badge" id="user-badge" onclick="showUserMenu()" style="display:none">•••</div>
     </div>
   </div>
 
@@ -567,7 +613,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 <div class="dropdown" id="dropdown" style="display:none"></div>
 <div id="dropdown-bg" style="display:none;position:fixed;inset:0;z-index:399" onclick="closeDropdown()"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ── SUPABASE ──────────────────────────────────────────────
+const SUPA_URL = 'https://zhhwrhkeokrkuoyolhok.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHdyaGtlb2tya3VveW9saG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NTIwNDYsImV4cCI6MjA5NDAyODA0Nn0.tOABZUroCCnKchQglblNARKYCTDqAs7IfGb0L_dMsFE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
+});
+
+let currentUser = null;
+
 // ── STATE ────────────────────────────────────────────────
 const S={
   get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
@@ -600,13 +660,45 @@ function load(){
   state.sheetsUrl=S.get('fl_sheets_url')||'';
   state.viewMonth=currentYM();
 }
-function save(){
+function saveLocal(){
   S.set('fl_inc',state.incomes);
   S.set('fl_wal',state.wallets);
   S.set('fl_rate',state.rate);
-  S.set('fl_rates',state.rates);
   S.set('fl_goal',state.goal);
   S.set('fl_sheets_url',state.sheetsUrl||'');
+}
+
+function save(){
+  saveLocal();
+  if(currentUser) saveToSupabase();
+}
+
+async function saveToSupabase(){
+  if(!currentUser)return;
+  const uid=currentUser.id;
+  if(state.incomes.length>0){
+    const rows=state.incomes.map(i=>({
+      id:i.id, user_id:uid, client:i.client||'', project:i.project||'',
+      amount:i.amount||0, currency:i.currency||'USD', wallet_id:i.walletId||'',
+      status:i.status||'pendiente', date:i.date||'', paid_date:i.paidDate||null
+    }));
+    await supa.from('incomes').upsert(rows,{onConflict:'id'});
+  }
+  if(state.wallets.length>0){
+    const rows=state.wallets.map(w=>({
+      id:w.id, user_id:uid, name:w.name||'', balance:w.balance||0, currency:w.currency||'USD'
+    }));
+    await supa.from('wallets').upsert(rows,{onConflict:'id'});
+  }
+  await supa.from('config').upsert({
+    user_id:uid, rate:state.rate||1050, goal:state.goal||0,
+    sheets_url:state.sheetsUrl||'', updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+}
+
+async function deleteFromSupabase(table, id){
+  if(!currentUser)return;
+  await supa.from(table).delete().eq('id',id).eq('user_id',currentUser.id);
 }
 
 // ── UTILS ────────────────────────────────────────────────
@@ -1075,7 +1167,7 @@ function deleteIncome(id){
     if(w)w.balance=Math.max(0,w.balance-inc.amount);
   }
   state.incomes=state.incomes.filter(i=>i.id!==id);
-  save();renderAll();autoSync();
+  save();renderAll();autoSync();deleteFromSupabase('incomes',id);
 }
 
 function openAdjustSheet(){
@@ -1127,7 +1219,7 @@ function saveWallet(){
 function deleteWallet(id){
   if(!confirm('¿Eliminar esta wallet?'))return;
   state.wallets=state.wallets.filter(w=>w.id!==id);
-  save();renderAll();autoSync();
+  save();renderAll();autoSync();deleteFromSupabase('wallets',id);
 }
 
 function setFilter(f,el){
@@ -1248,10 +1340,115 @@ document.querySelectorAll('.sheet-bg').forEach(sb=>{
   sb.addEventListener('click',e=>{if(e.target===sb)sb.classList.remove('open');});
 });
 
-// init
-load();
-state.viewMonth=currentYM();
-renderAll();
+// ── AUTH FUNCTIONS ───────────────────────────────────────
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>{
+    t.classList.toggle('active',(tab==='login'&&i===0)||(tab==='register'&&i===1));
+  });
+  document.getElementById('auth-submit-btn').textContent=tab==='login'?'Entrar':'Crear cuenta';
+  document.getElementById('auth-forgot').style.display=tab==='login'?'block':'none';
+  document.getElementById('auth-error').textContent='';
+  document.querySelector('.auth-tab.active').dataset.tab=tab;
+  document.getElementById('auth-submit-btn').dataset.tab=tab;
+}
+
+async function authSubmit(){
+  const btn=document.getElementById('auth-submit-btn');
+  const tab=btn.dataset.tab||'login';
+  const email=document.getElementById('auth-email').value.trim();
+  const pass=document.getElementById('auth-password').value;
+  const errEl=document.getElementById('auth-error');
+  if(!email||!pass){errEl.textContent='Completá email y contraseña.';return;}
+  btn.disabled=true;
+  btn.textContent='...';
+  errEl.textContent='';
+  let res;
+  if(tab==='register'){
+    res=await supa.auth.signUp({email,password:pass});
+  }else{
+    res=await supa.auth.signInWithPassword({email,password:pass});
+  }
+  if(res.error){
+    errEl.textContent=translateAuthError(res.error.message);
+    btn.disabled=false;
+    btn.textContent=tab==='login'?'Entrar':'Crear cuenta';
+  } else if(tab==='register'&&!res.data.session){
+    errEl.style.color='#4ade80';
+    errEl.textContent='¡Cuenta creada! Revisá tu email para confirmar.';
+    btn.disabled=false;
+    btn.textContent='Crear cuenta';
+  }
+}
+
+async function forgotPassword(){
+  const email=document.getElementById('auth-email').value.trim();
+  if(!email){document.getElementById('auth-error').textContent='Ingresá tu email primero.';return;}
+  const {error}=await supa.auth.resetPasswordForEmail(email);
+  const errEl=document.getElementById('auth-error');
+  if(error){errEl.textContent='Error: '+error.message;}
+  else{errEl.style.color='#4ade80';errEl.textContent='Te enviamos un email para resetear la contraseña.';}
+}
+
+function translateAuthError(msg){
+  if(msg.includes('Invalid login'))return 'Email o contraseña incorrectos.';
+  if(msg.includes('Email not confirmed'))return 'Confirmá tu email antes de entrar.';
+  if(msg.includes('already registered'))return 'Este email ya está registrado.';
+  if(msg.includes('Password should'))return 'La contraseña debe tener al menos 6 caracteres.';
+  return msg;
+}
+
+function showUserMenu(){
+  if(!currentUser)return;
+  const email=currentUser.email;
+  const items=[
+    {icon:'✉',label:email,action:''},
+    {icon:'→',label:'Cerrar sesión',danger:true,action:'signOut()'}
+  ];
+  const btn=document.getElementById('user-badge');
+  showDropdown(items,btn);
+}
+
+async function signOut(){
+  await supa.auth.signOut();
+  currentUser=null;
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('auth-loading').style.display='none';
+  document.getElementById('auth-card').style.display='block';
+  document.getElementById('user-badge').style.display='none';
+  document.getElementById('auth-error').textContent='';
+  document.getElementById('auth-email').value='';
+  document.getElementById('auth-password').value='';
+}
+
+function enterApp(user){
+  currentUser=user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('main-app').style.display='flex';
+  document.getElementById('user-badge').style.display='block';
+  document.getElementById('user-badge').textContent=user.email.split('@')[0];
+  load();
+  state.viewMonth=currentYM();
+  renderAll();
+  loadFromSupabase();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+(async()=>{
+  const {data:{session}}=await supa.auth.getSession();
+  if(session&&session.user){
+    enterApp(session.user);
+  }else{
+    document.getElementById('auth-loading').style.display='none';
+    document.getElementById('auth-card').style.display='block';
+  }
+  supa.auth.onAuthStateChange((_event,session)=>{
+    if(session&&session.user&&!currentUser){
+      enterApp(session.user);
+    }
+  });
+})();
 </script>
+</div><!-- /main-app -->
 </body>
 </html>
