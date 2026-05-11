@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>flow. — finanzas personales</title>
+<title>nari. — finanzas personales</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -242,7 +242,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">flow<span>.</span></div>
+    <div class="topbar-logo">nari<span>.</span></div>
     <div class="topbar-right">
       <div class="topbar-month" id="topbar-month-label" style="display:none"></div>
     </div>
@@ -257,20 +257,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
         <div class="hero-card">
           <div class="hero-label">Cobrado este mes</div>
           <div class="hero-value mono" id="d-cobrado">$0 <span class="currency">USD</span></div>
-          <div class="hero-sub" id="d-cobrado-sub">0 ingresos abonados</div>
+          <div class="hero-sub" id="d-cobrado-sub">total en USD · incluye conversión ARS</div>
           <div id="d-vs-badge" style="margin-top:6px"></div>
         </div>
 
-        <div class="metric-grid">
+        <div class="metric-grid" style="margin-bottom:12px">
           <div class="metric-tile">
-            <div class="metric-tile-label">Facturado</div>
-            <div class="metric-tile-val mono" id="d-facturado" style="font-size:15px">$0</div>
-            <div class="metric-tile-sub" id="d-facturado-sub">USD</div>
+            <div class="metric-tile-label">Facturado USD</div>
+            <div class="metric-tile-val mono" id="d-facturado" style="font-size:16px;color:var(--lime)">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-sub">en dólares</div>
           </div>
           <div class="metric-tile">
-            <div class="metric-tile-label">Pendiente</div>
-            <div class="metric-tile-val mono" id="d-pendiente" style="font-size:15px;color:var(--amber)">$0</div>
-            <div class="metric-tile-sub" id="d-pendiente-sub">0 pagos</div>
+            <div class="metric-tile-label">Facturado ARS</div>
+            <div class="metric-tile-val mono" id="d-facturado-ars" style="font-size:16px;color:var(--blue)">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-ars-sub">en pesos</div>
           </div>
           <div class="metric-tile">
             <div class="metric-tile-label">Proyectos</div>
@@ -333,6 +333,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
           <div class="month-nav-label" id="view-month-label">Mayo 2026</div>
           <button class="month-nav-btn" onclick="changeViewMonth(1)">›</button>
         </div>
+        <div style="background:var(--s2);border:1px solid var(--lime-border);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">TC mes</span>
+          <input class="form-input mono" type="number" id="mes-rate" placeholder="1050" inputmode="decimal" style="flex:1;padding:6px 10px;font-size:13px;background:var(--s3)">
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;white-space:nowrap;color:var(--lime);border-color:var(--lime-border)" onclick="saveMonthRate()">Guardar</button>
+        </div>
         <div class="chips" id="filter-chips">
           <div class="chip active" onclick="setFilter('todos',this)">Todos</div>
           <div class="chip" onclick="setFilter('pendiente',this)">Pendientes</div>
@@ -358,12 +363,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
         <div class="sh"><div class="sh-title">Configuración</div></div>
 
         <div class="config-block">
-          <div class="config-block-title">Tipo de cambio</div>
+          <div class="config-block-title">Tipo de cambio base</div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5">TC de referencia cuando no hay uno específico para el mes. Podés sobreescribir el TC por mes desde la pestaña <b style="color:var(--lime)">Mes</b>.</div>
           <div class="form-group">
-            <label class="form-label">USD → ARS</label>
+            <label class="form-label">USD → ARS (default)</label>
             <input class="form-input mono" type="number" id="cfg-rate" placeholder="1050" inputmode="decimal">
           </div>
-          <button class="btn btn-ghost" style="width:100%" onclick="saveRate()">Guardar tipo de cambio</button>
+          <button class="btn btn-ghost" style="width:100%" onclick="saveRate()">Guardar TC base</button>
+          <div id="rates-summary" style="margin-top:12px;font-size:11px;color:var(--text3);line-height:1.8"></div>
         </div>
 
         <div class="config-block">
@@ -436,6 +443,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
     <button class="panel-back" onclick="closePanel()">‹</button>
     <div class="panel-title" id="panel-wallet-name">Wallet</div>
     <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="editCurrentWallet()">Editar</button>
+    <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;color:var(--lime);border-color:var(--lime-border)" onclick="openAdjustSheet()">+ Ajustar</button>
   </div>
   <div class="panel-content" id="panel-wallet-body"></div>
 </div>
@@ -449,7 +457,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
       <input type="hidden" id="income-edit-id">
       <div class="form-group">
         <label class="form-label">Cliente</label>
-        <input class="form-input" id="f-cliente" placeholder="Nombre del cliente" autocomplete="off">
+        <input class="form-input" id="f-cliente" placeholder="Nombre del cliente" autocomplete="off" list="clients-datalist">
+        <datalist id="clients-datalist"></datalist>
       </div>
       <div class="form-group">
         <label class="form-label">Proyecto</label>
@@ -519,6 +528,41 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
   </div>
 </div>
 
+<!-- ADJUST BALANCE BOTTOM SHEET -->
+<div class="sheet-bg" id="sheet-adjust">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="adjust-sheet-title">Ajustar saldo</div>
+    <div class="sheet-body">
+      <input type="hidden" id="adjust-wallet-id">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Saldo actual</div>
+        <div class="mono" style="font-size:22px;font-weight:800;color:var(--lime)" id="adjust-current-balance">$0</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de ajuste</label>
+        <select class="form-input" id="adjust-type">
+          <option value="set">Establecer saldo exacto</option>
+          <option value="add">Sumar monto</option>
+          <option value="sub">Restar monto</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monto</label>
+        <input class="form-input mono" type="number" id="adjust-amount" placeholder="0" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción (opcional)</label>
+        <input class="form-input" id="adjust-desc" placeholder="Ej: Regalo, transferencia, etc." autocomplete="off">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" onclick="closeSheet('sheet-adjust')">Cancelar</button>
+        <button class="btn btn-lime" onclick="applyAdjust()" style="flex:2">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- DROPDOWN MENU -->
 <div class="dropdown" id="dropdown" style="display:none"></div>
 <div id="dropdown-bg" style="display:none;position:fixed;inset:0;z-index:399" onclick="closeDropdown()"></div>
@@ -534,9 +578,10 @@ let state={
   incomes:[],
   wallets:[],
   rate:1050,
+  rates:{},
   goal:0,
   filter:'todos',
-  viewMonth:currentYM(),
+  viewMonth:null,
   currentPage:'dashboard',
   currentWalletId:null,
   sheetsUrl:''
@@ -550,13 +595,16 @@ function load(){
     {id:'w3',name:'Efectivo',balance:0,currency:'USD'}
   ];
   state.rate=S.get('fl_rate')||1050;
+  state.rates=S.get('fl_rates')||{};
   state.goal=S.get('fl_goal')||0;
   state.sheetsUrl=S.get('fl_sheets_url')||'';
+  state.viewMonth=currentYM();
 }
 function save(){
   S.set('fl_inc',state.incomes);
   S.set('fl_wal',state.wallets);
   S.set('fl_rate',state.rate);
+  S.set('fl_rates',state.rates);
   S.set('fl_goal',state.goal);
   S.set('fl_sheets_url',state.sheetsUrl||'');
 }
@@ -574,7 +622,8 @@ function ymLabel(ym){const[y,m]=ym.split('-');return MONTHS[+m-1]+' '+y}
 function incYM(inc){return (inc.date||currentYM()).slice(0,7)}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function toUSD(amt,cur){return cur==='USD'?amt:amt/state.rate}
+function rateForYM(ym){return (state.rates&&state.rates[ym])||state.rate||1050;}
+function toUSD(amt,cur,ym){const r=ym?rateForYM(ym):state.rate;return cur==='USD'?amt:amt/r;}
 function fmtAmt(amt,cur){
   const n=Number(amt).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
   return '$'+n+(cur?' '+cur:'');
@@ -583,11 +632,17 @@ function fmtUSD(amt){return '$'+Number(amt).toLocaleString('es-AR',{minimumFract
 
 function calcMonth(ym){
   const inc=state.incomes.filter(i=>incYM(i)===ym);
-  const facturado=inc.reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
-  const cobrado=inc.filter(i=>i.status==='abonado').reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
-  const pendiente=inc.filter(i=>i.status==='pendiente').reduce((s,i)=>s+toUSD(i.amount,i.currency),0);
+  const r=rateForYM(ym);
+  const facturadoUSD=inc.filter(i=>i.currency==='USD').reduce((s,i)=>s+i.amount,0);
+  const facturadoARS=inc.filter(i=>i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
+  const facturado=facturadoUSD+facturadoARS/r; // total en USD
+  const cobradoUSD=inc.filter(i=>i.status==='abonado'&&i.currency==='USD').reduce((s,i)=>s+i.amount,0);
+  const cobradoARS=inc.filter(i=>i.status==='abonado'&&i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
+  const cobrado=cobradoUSD+cobradoARS/r; // total en USD
+  const pendiente=inc.filter(i=>i.status==='pendiente').reduce((s,i)=>s+(i.currency==='USD'?i.amount:i.amount/r),0);
+  const countARS=inc.filter(i=>i.currency==='ARS').length;
   const clients=[...new Set(inc.map(i=>i.client).filter(Boolean))].length;
-  return{facturado,cobrado,pendiente,clients,count:inc.length,pending:inc.filter(i=>i.status==='pendiente').length};
+  return{facturado,facturadoUSD,facturadoARS,cobrado,cobradoUSD,cobradoARS,pendiente,clients,count:inc.length,pending:inc.filter(i=>i.status==='pendiente').length,countARS};
 }
 
 // ── PAGES ─────────────────────────────────────────────────
@@ -628,14 +683,14 @@ function updateTopbar(){
 function renderDash(){
   const cm=currentYM(),pm=prevYM(cm);
   const cur=calcMonth(cm),prev=calcMonth(pm);
-  const ahorros=state.wallets.reduce((s,w)=>s+toUSD(w.balance,w.currency),0);
+  const ahorros=state.wallets.filter(w=>w.currency==='USD').reduce((s,w)=>s+w.balance,0);
 
   document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.cobrado),'')+'<span class="currency"> USD</span>';
-  document.getElementById('d-cobrado-sub').textContent=cur.count-cur.pending+' ingreso'+(cur.count-cur.pending!==1?'s':'')+' abonado'+(cur.count-cur.pending!==1?'s':'');
-  document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturado),'');
-  document.getElementById('d-facturado-sub').textContent='USD';
-  document.getElementById('d-pendiente').textContent=fmtAmt(Math.round(cur.pendiente),'');
-  document.getElementById('d-pendiente-sub').textContent=cur.pending+' pago'+(cur.pending!==1?'s':'');
+  document.getElementById('d-cobrado-sub').textContent='total en USD · incluye conversión ARS';
+  document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
+  document.getElementById('d-facturado-sub').textContent='en dólares';
+  document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
+  document.getElementById('d-facturado-ars-sub').textContent='en pesos';
   document.getElementById('d-proyectos').textContent=cur.count;
   document.getElementById('d-clientes-sub').textContent=cur.clients+' cliente'+(cur.clients!==1?'s':'');
   document.getElementById('d-ahorros').textContent=fmtAmt(Math.round(ahorros),'');
@@ -696,11 +751,12 @@ function renderDash(){
 
 function renderWallets(){
   const el=document.getElementById('wallets-list');
-  const total=state.wallets.reduce((s,w)=>s+toUSD(w.balance,w.currency),0);
+  const usdWallets=state.wallets.filter(w=>w.currency==='USD');
+  const total=usdWallets.reduce((s,w)=>s+w.balance,0);
   document.getElementById('savings-total').textContent=fmtAmt(Math.round(total),'');
-  document.getElementById('savings-sub').textContent=state.wallets.length+' wallet'+(state.wallets.length!==1?'s':'')+' · TC: $'+state.rate+' ARS/USD';
-  if(state.wallets.length===0){el.innerHTML='<div class="empty">No hay wallets. Tocá + para agregar.</div>';return;}
-  el.innerHTML=state.wallets.map(w=>`
+  document.getElementById('savings-sub').textContent=usdWallets.length+' wallet'+(usdWallets.length!==1?'s':'')+' en USD';
+  if(usdWallets.length===0){el.innerHTML='<div class="empty">No hay wallets en USD. Tocá + para agregar.</div>';return;}
+  el.innerHTML=usdWallets.map(w=>`
     <div class="wallet-card" onclick="openWalletPanel('${w.id}')">
       <div class="wallet-card-left">
         <div class="wallet-name">${escH(w.name)}</div>
@@ -708,7 +764,6 @@ function renderWallets(){
       </div>
       <div class="wallet-card-right">
         <div class="wallet-balance">${fmtAmt(w.balance,w.currency)}</div>
-        ${w.currency==='ARS'?`<div class="wallet-balance-sub">≈ ${fmtUSD(Math.round(toUSD(w.balance,w.currency)))}</div>`:''}
       </div>
       <button class="wallet-dots" onclick="event.stopPropagation();walletMenu('${w.id}',this)" aria-label="Opciones">•••</button>
     </div>`).join('');
@@ -717,6 +772,13 @@ function renderWallets(){
 function renderIncomes(){
   const el=document.getElementById('income-list');
   document.getElementById('view-month-label').textContent=ymLabel(state.viewMonth);
+  // populate TC field with this month's rate
+  const mesRateEl=document.getElementById('mes-rate');
+  if(mesRateEl){
+    const r=state.rates&&state.rates[state.viewMonth];
+    mesRateEl.value=r||state.rate||1050;
+    mesRateEl.placeholder=state.rate||1050;
+  }
   let inc=state.incomes.filter(i=>incYM(i)===state.viewMonth);
   if(state.filter==='pendiente')inc=inc.filter(i=>i.status==='pendiente');
   else if(state.filter==='abonado')inc=inc.filter(i=>i.status==='abonado');
@@ -751,12 +813,14 @@ function renderHistory(){
   if(months.length===0){el.innerHTML='<div class="empty">No hay historial disponible.</div>';return;}
   el.innerHTML=months.map(ym=>{
     const d=calcMonth(ym);
+    const r=rateForYM(ym);
+    const totalARS=Math.round(d.facturadoUSD*r+d.facturadoARS);
     return `<div class="history-card" onclick="goToMonth('${ym}')">
       <div class="history-month">${ymLabel(ym)}</div>
       <div class="history-stats">
-        <div class="hstat"><div class="hstat-label">Facturado</div><div class="hstat-val mono">${fmtUSD(Math.round(d.facturado))}</div></div>
-        <div class="hstat"><div class="hstat-label">Cobrado</div><div class="hstat-val mono" style="color:var(--green)">${fmtUSD(Math.round(d.cobrado))}</div></div>
-        <div class="hstat"><div class="hstat-label">Pendiente</div><div class="hstat-val mono" style="color:var(--amber)">${fmtUSD(Math.round(d.pendiente))}</div></div>
+        <div class="hstat"><div class="hstat-label">Total USD</div><div class="hstat-val mono" style="color:var(--lime)">${fmtUSD(Math.round(d.facturado))}</div></div>
+        <div class="hstat"><div class="hstat-label">Total ARS</div><div class="hstat-val mono" style="color:var(--blue)">$${totalARS.toLocaleString('es-AR')}</div></div>
+        <div class="hstat"><div class="hstat-label">Tipo de cambio</div><div class="hstat-val mono" style="color:var(--text2)">$${r.toLocaleString('es-AR')}</div></div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:8px">${d.count} ingreso${d.count!==1?'s':''} · ${d.clients} cliente${d.clients!==1?'s':''} → Ver ingresos ›</div>
     </div>`;
@@ -772,6 +836,14 @@ function renderConfig(){
   document.getElementById('cfg-rate').value=state.rate;
   document.getElementById('cfg-goal').value=state.goal||'';
   document.getElementById('cfg-sheets-url').value=state.sheetsUrl||'';
+  // show monthly rates summary
+  const el=document.getElementById('rates-summary');
+  if(el){
+    const entries=Object.entries(state.rates||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);
+    if(entries.length===0){el.textContent='Sin TC mensuales guardados aún.';return;}
+    el.innerHTML='<b style="color:var(--text2)">TC por mes guardados:</b><br>'+
+      entries.map(([ym,r])=>`<span style="color:var(--text)">${ymLabel(ym)}</span>: <span class="mono" style="color:var(--lime)">$${r}</span>`).join('<br>');
+  }
 }
 
 // ── MONTH NAV ─────────────────────────────────────────────
@@ -793,16 +865,34 @@ function openWalletPanel(id){
     <div class="mono" style="font-size:28px;font-weight:800;color:var(--lime);letter-spacing:-1px">${fmtAmt(w.balance,w.currency)}</div>
     <div style="font-size:11px;color:var(--text3);margin-top:4px">${txs.length} pago${txs.length!==1?'s':''} cobrado${txs.length!==1?'s':''} · Total sumado: ${fmtAmt(Math.round(totalIncoming),w.currency)}</div>
   </div>`;
-  if(txs.length===0){html+='<div class="empty">Todavía no hay pagos cobrados en esta wallet.</div>';}
+  if(txs.length===0&&(!w.adjustments||w.adjustments.length===0)){html+='<div class="empty">Todavía no hay movimientos en esta wallet.</div>';}
   else{
-    html+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px">Pagos recibidos</div>';
-    html+=txs.map(i=>`<div class="wtx">
-      <div class="wtx-top">
-        <div><div class="wtx-client">${escH(i.client)}</div><div class="wtx-project">${escH(i.project)}</div></div>
-        <div class="wtx-amount mono">${fmtAmt(i.amount,i.currency)}</div>
-      </div>
-      <div class="wtx-date">${i.paidDate||i.date||'—'}</div>
-    </div>`).join('');
+    if(txs.length>0){
+      html+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px">Pagos recibidos</div>';
+      html+=txs.map(i=>`<div class="wtx">
+        <div class="wtx-top">
+          <div><div class="wtx-client">${escH(i.client)}</div><div class="wtx-project">${escH(i.project)}</div></div>
+          <div class="wtx-amount mono">${fmtAmt(i.amount,i.currency)}</div>
+        </div>
+        <div class="wtx-date">${i.paidDate||i.date||'—'}</div>
+      </div>`).join('');
+    }
+    if(w.adjustments&&w.adjustments.length>0){
+      html+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin:14px 0 10px">Ajustes manuales</div>';
+      const adjs=[...w.adjustments].reverse();
+      html+=adjs.map(a=>{
+        const typeLabel=a.type==='set'?'Saldo fijo':a.type==='add'?'+ Suma':'− Resta';
+        const color=a.type==='sub'?'var(--red)':'var(--green)';
+        const sign=a.type==='sub'?'−':a.type==='set'?'=':'+';
+        return `<div class="wtx">
+          <div class="wtx-top">
+            <div><div class="wtx-client">${escH(a.desc)}</div><div class="wtx-project">${typeLabel}</div></div>
+            <div class="wtx-amount mono" style="color:${color}">${sign}${fmtAmt(a.amount,w.currency)}</div>
+          </div>
+          <div class="wtx-date">${a.date} · Saldo resultante: ${fmtAmt(a.newBalance,w.currency)}</div>
+        </div>`;
+      }).join('');
+    }
   }
   document.getElementById('panel-wallet-body').innerHTML=html;
   document.getElementById('wallet-panel').classList.add('open');
@@ -817,7 +907,14 @@ function editCurrentWallet(){
 }
 
 // ── SHEETS ────────────────────────────────────────────────
+function populateClientsList(){
+  const dl=document.getElementById('clients-datalist');
+  if(!dl)return;
+  const clients=[...new Set(state.incomes.map(i=>i.client).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  dl.innerHTML=clients.map(c=>`<option value="${escH(c)}">`).join('');
+}
 function openIncomeSheet(id){
+  populateClientsList();
   document.getElementById('sheet-income').classList.add('open');
   if(id){
     const inc=state.incomes.find(i=>i.id===id);
@@ -981,6 +1078,38 @@ function deleteIncome(id){
   save();renderAll();autoSync();
 }
 
+function openAdjustSheet(){
+  const id=state.currentWalletId;
+  if(!id)return;
+  const w=state.wallets.find(x=>x.id===id);
+  if(!w)return;
+  document.getElementById('adjust-wallet-id').value=id;
+  document.getElementById('adjust-sheet-title').textContent='Ajustar · '+w.name;
+  document.getElementById('adjust-current-balance').textContent=fmtAmt(w.balance,w.currency);
+  document.getElementById('adjust-type').value='add';
+  document.getElementById('adjust-amount').value='';
+  document.getElementById('adjust-desc').value='';
+  document.getElementById('sheet-adjust').classList.add('open');
+}
+function applyAdjust(){
+  const id=document.getElementById('adjust-wallet-id').value;
+  const type=document.getElementById('adjust-type').value;
+  const amt=parseFloat(document.getElementById('adjust-amount').value)||0;
+  if(amt<=0&&type!=='set'){alert('Ingresá un monto válido.');return;}
+  const w=state.wallets.find(x=>x.id===id);
+  if(!w)return;
+  if(type==='set') w.balance=amt;
+  else if(type==='add') w.balance+=amt;
+  else if(type==='sub') w.balance=Math.max(0,w.balance-amt);
+  // log adjustment as a note in wallet (store in wallet.adjustments)
+  if(!w.adjustments)w.adjustments=[];
+  const desc=document.getElementById('adjust-desc').value.trim()||'Ajuste manual';
+  w.adjustments.push({date:new Date().toISOString().slice(0,10),type,amount:amt,desc,newBalance:w.balance});
+  save();closeSheet('sheet-adjust');renderAll();autoSync();
+  // re-open panel to show updated balance
+  openWalletPanel(id);
+}
+
 function saveWallet(){
   const id=document.getElementById('wallet-edit-id').value;
   const nombre=document.getElementById('w-nombre').value.trim();
@@ -1008,6 +1137,18 @@ function setFilter(f,el){
   renderIncomes();
 }
 
+function saveMonthRate(){
+  const v=parseFloat(document.getElementById('mes-rate').value);
+  if(v>0){
+    if(!state.rates)state.rates={};
+    state.rates[state.viewMonth]=v;
+    save();renderAll();
+    // brief visual feedback
+    const btn=document.querySelector('[onclick="saveMonthRate()"]');
+    const orig=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=orig,1200);
+  }
+}
+
 function saveRate(){
   const v=parseFloat(document.getElementById('cfg-rate').value);
   if(v>0){state.rate=v;save();renderAll();alert('TC guardado: $'+state.rate+' ARS');}
@@ -1033,50 +1174,49 @@ function setSyncStatus(msg,type){
   if(type!=='loading')setTimeout(()=>{el.style.display='none'},4000);
 }
 
+function buildPayload(){
+  return JSON.stringify({
+    action: 'sync_all',
+    incomes: state.incomes,
+    wallets: state.wallets,
+    rate: state.rate,
+    rates: state.rates||{}
+  });
+}
+
 function autoSync(){
   if(!state.sheetsUrl)return;
-  try{
-    const payload=JSON.stringify({action:'sync_all',incomes:state.incomes,wallets:state.wallets,rate:state.rate});
-    // Use hidden iframe + form POST to bypass CORS completely
-    let fr=document.getElementById('_sync_frame');
-    if(!fr){fr=document.createElement('iframe');fr.id='_sync_frame';fr.name='_sync_frame';fr.style.display='none';document.body.appendChild(fr);}
-    let fm=document.getElementById('_sync_form');
-    if(fm)fm.remove();
-    fm=document.createElement('form');
-    fm.id='_sync_form';
-    fm.method='POST';
-    fm.action=state.sheetsUrl;
-    fm.target='_sync_frame';
-    fm.style.display='none';
-    const inp=document.createElement('input');
-    inp.type='hidden';
-    inp.name='payload';
-    inp.value=payload;
-    fm.appendChild(inp);
-    document.body.appendChild(fm);
-    fm.submit();
-  }catch(e){}
+  fetch(state.sheetsUrl, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body: buildPayload()
+  }).catch(()=>{});
 }
 
 function syncToSheets(){
-  if(!state.sheetsUrl){alert('Primero guardá la URL del Web App.');return;}
+  if(!state.sheetsUrl){alert('Primero guardá la URL del Web App en Configuración.');return;}
   const btn=document.getElementById('btn-sync');
   const icon=document.getElementById('sync-icon');
   btn.disabled=true;
   icon.textContent='…';
   setSyncStatus('Sincronizando...','loading');
-  try{
-    autoSync();
-    setTimeout(()=>{
-      setSyncStatus('Sincronizado correctamente ✓','ok');
-      btn.disabled=false;
-      icon.textContent='↑';
-    },1500);
-  }catch(e){
-    setSyncStatus('Error: '+e.message,'error');
+  fetch(state.sheetsUrl, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body: buildPayload()
+  })
+  .then(()=>{
+    setSyncStatus('Sincronizado ✓','ok');
     btn.disabled=false;
     icon.textContent='↑';
-  }
+  })
+  .catch(()=>{
+    setSyncStatus('Error de red. Verificá la URL.','error');
+    btn.disabled=false;
+    icon.textContent='↑';
+  });
 }
 
 async function syncFromSheets(){
@@ -1084,31 +1224,14 @@ async function syncFromSheets(){
   if(!confirm('¿Importar datos desde Google Sheets? Esto reemplazará los datos locales.'))return;
   setSyncStatus('Importando...','loading');
   try{
-    // For GET requests, use a script tag trick to bypass CORS
-    const url=state.sheetsUrl+'?callback=flowCallback&ts='+Date.now();
-    window._flowImportResolve=null;
-    const p=new Promise((res,rej)=>{
-      window.flowCallback=function(data){res(data);};
-      const s=document.createElement('script');
-      s.src=url;
-      s.onerror=()=>rej(new Error('Error cargando datos'));
-      setTimeout(()=>rej(new Error('Timeout')),10000);
-      document.head.appendChild(s);
-      setTimeout(()=>document.head.removeChild(s),11000);
-    });
-    // Try normal fetch first (works if opened via server/drive)
-    try{
-      const resp=await fetch(state.sheetsUrl+'?ts='+Date.now());
-      const data=await resp.json();
-      if(data.ok){
-        if(data.incomes)state.incomes=data.incomes;
-        if(data.wallets)state.wallets=data.wallets;
-        save();renderAll();
-        setSyncStatus('Importado correctamente ✓','ok');
-        return;
-      }
-    }catch(e2){}
-    setSyncStatus('Para importar, abrí la app desde Google Drive o un servidor.','error');
+    const resp=await fetch(state.sheetsUrl+'?action=export&ts='+Date.now());
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    if(data.incomes)state.incomes=data.incomes;
+    if(data.wallets)state.wallets=data.wallets;
+    if(data.rates)state.rates=data.rates;
+    save();renderAll();
+    setSyncStatus('Importado correctamente ✓','ok');
   }catch(e){
     setSyncStatus('Error: '+e.message,'error');
   }
@@ -1116,7 +1239,7 @@ async function syncFromSheets(){
 
 function clearAll(){
   if(!confirm('¿Borrar TODOS los datos?'))return;
-  state={incomes:[],wallets:[],rate:1050,goal:0,filter:'todos',viewMonth:currentYM(),currentPage:'dashboard',currentWalletId:null};
+  state={incomes:[],wallets:[],rate:1050,rates:{},goal:0,filter:'todos',viewMonth:currentYM(),currentPage:'dashboard',currentWalletId:null};
   save();showPage('dashboard');
 }
 
