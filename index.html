@@ -1279,11 +1279,19 @@ function buildPayload(){
 
 function autoSync(){
   if(!state.sheetsUrl)return;
-  fetch(state.sheetsUrl, {
+  // Call via Supabase Edge Function — no CORS issues
+  fetch('https://zhhwrhkeokrkuoyolhok.supabase.co/functions/v1/sync-sheets',{
     method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'text/plain'},
-    body: buildPayload()
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHdyaGtlb2tya3VveW9saG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NTIwNDYsImV4cCI6MjA5NDAyODA0Nn0.tOABZUroCCnKchQglblNARKYCTDqAs7IfGb0L_dMsFE'
+    },
+    body:JSON.stringify({
+      sheetsUrl:state.sheetsUrl,
+      incomes:state.incomes,
+      wallets:state.wallets,
+      rate:state.rate
+    })
   }).catch(()=>{});
 }
 
