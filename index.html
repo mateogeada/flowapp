@@ -266,7 +266,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="auth-screen">
   <div class="auth-logo">nari<span style="color:#FBBF24">.</span></div>
-  <div class="auth-sub">tus finanzas, siempre con vos</div>
+  <div class="auth-sub">Controlador de Finanzas Personales</div>
   <div id="auth-loading" class="auth-loading"><div class="spinner"></div> Cargando...</div>
   <div id="auth-card" class="auth-card" style="display:none">
     <div class="auth-tabs">
@@ -301,7 +301,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
     <div class="page active" id="page-dashboard">
       <div style="padding-top:8px">
         <div class="hero-card">
-          <div class="hero-label">Cobrado este mes</div>
+          <div class="hero-label">Facturado este mes</div>
           <div class="hero-value mono" id="d-cobrado">$0 <span class="currency">USD</span></div>
           <div class="hero-sub" id="d-cobrado-sub">total en USD · incluye conversión ARS</div>
           <div id="d-vs-badge" style="margin-top:6px"></div>
@@ -346,11 +346,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
         </div>
 
         <div class="card" style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px">VS. mes anterior</div>
-          <div class="mini-bars" id="prev-chart"></div>
-          <div class="mini-legend">
-            <span><span class="legend-dot" style="background:var(--s4)"></span><span style="font-size:11px;color:var(--text3)" id="prev-label">Anterior</span></span>
-            <span><span class="legend-dot" style="background:var(--lime);opacity:.85"></span><span style="font-size:11px;color:var(--text3)">Este mes</span></span>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:14px">🏆 Mejor mes</div>
+          <div id="best-month-content">
+            <div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tu mejor mes.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:14px">⭐ Top 3 clientes</div>
+          <div id="top-clients-content">
+            <div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tus mejores clientes.</div>
           </div>
         </div>
       </div>
@@ -384,6 +389,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
           <input class="form-input mono" type="number" id="mes-rate" placeholder="1050" inputmode="decimal" style="flex:1;padding:6px 10px;font-size:13px;background:var(--s3)">
           <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px;white-space:nowrap;color:var(--lime);border-color:var(--lime-border)" onclick="saveMonthRate()">Guardar</button>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px" id="mes-summary-cards">
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Facturado USD</div>
+            <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--lime)" id="mes-total-usd">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px" id="mes-count-usd">0 ingresos</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Facturado ARS</div>
+            <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--blue)" id="mes-total-ars">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px" id="mes-count-ars">0 ingresos</div>
+          </div>
+        </div>
+
         <div class="chips" id="filter-chips">
           <div class="chip active" onclick="setFilter('todos',this)">Todos</div>
           <div class="chip" onclick="setFilter('pendiente',this)">Pendientes</div>
@@ -779,7 +797,7 @@ function renderDash(){
   const ahorros=state.wallets.filter(w=>w.currency==='USD').reduce((s,w)=>s+w.balance,0);
 
   document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.cobrado),'')+'<span class="currency"> USD</span>';
-  document.getElementById('d-cobrado-sub').textContent='total en USD · incluye conversión ARS';
+  document.getElementById('d-cobrado-sub').textContent='total facturado en USD · incluye conversión ARS';
   document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
   document.getElementById('d-facturado-sub').textContent='en dólares';
   document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
@@ -789,9 +807,9 @@ function renderDash(){
   document.getElementById('d-ahorros').textContent=fmtAmt(Math.round(ahorros),'');
 
   const badge=document.getElementById('d-vs-badge');
-  if(prev.cobrado>0){
-    const diff=cur.cobrado-prev.cobrado;
-    const pct=Math.abs(Math.round((diff/prev.cobrado)*100));
+  if(prev.facturado>0){
+    const diff=cur.facturado-prev.facturado;
+    const pct=Math.abs(Math.round((diff/prev.facturado)*100));
     badge.innerHTML=diff>=0
       ?`<span class="hero-badge up">↑ ${pct}% vs mes anterior</span>`
       :`<span class="hero-badge down">↓ ${pct}% vs mes anterior</span>`;
@@ -802,14 +820,14 @@ function renderDash(){
     ins='Cargá tus primeros ingresos para ver el resumen del mes.';
   }else{
     const pts=[];
-    pts.push('Este mes llevás <b>'+fmtUSD(Math.round(cur.cobrado))+'</b> cobrados.');
-    if(prev.cobrado>0){
-      const diff=prev.cobrado-cur.cobrado;
+    pts.push('Este mes facturaste <b>'+fmtUSD(Math.round(cur.facturado))+'</b>.');
+    if(prev.facturado>0){
+      const diff=prev.facturado-cur.facturado;
       if(diff>0)pts.push('Te faltan <b>'+fmtUSD(Math.round(diff))+'</b> para superar '+ymLabel(pm)+'.');
       else pts.push('¡Ya <b>superaste</b> el mes anterior por <b>'+fmtUSD(Math.round(-diff))+'</b>!');
     }
     if(state.goal>0){
-      const falta=state.goal-cur.cobrado;
+      const falta=state.goal-cur.facturado;
       if(falta>0)pts.push('Te faltan <b>'+fmtUSD(Math.round(falta))+'</b> para tu meta de '+fmtUSD(state.goal)+'.');
       else pts.push('🎯 <b>Meta mensual alcanzada.</b>');
     }
@@ -818,28 +836,75 @@ function renderDash(){
   document.getElementById('d-insight').innerHTML=ins;
 
   if(state.goal>0){
-    const pct=Math.min(100,Math.round((cur.cobrado/state.goal)*100));
+    const pct=Math.min(100,Math.round((cur.facturado/state.goal)*100));
     document.getElementById('goal-bar').style.width=pct+'%';
     document.getElementById('goal-meta-label').textContent='Meta: '+fmtUSD(state.goal);
-    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.cobrado));
+    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.facturado));
     document.getElementById('goal-pct-label').textContent=pct+'%';
-    const falta=state.goal-cur.cobrado;
+    const falta=state.goal-cur.facturado;
     document.getElementById('goal-sub').textContent=pct+'% completado'+(falta>0?' · Faltan '+fmtUSD(Math.round(falta)):' · ¡Meta alcanzada!');
   }else{
     document.getElementById('goal-bar').style.width='0%';
     document.getElementById('goal-meta-label').textContent='Meta: no configurada';
-    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.cobrado));
+    document.getElementById('goal-cobrado-label').textContent=fmtUSD(Math.round(cur.facturado));
     document.getElementById('goal-pct-label').textContent='—';
     document.getElementById('goal-sub').textContent='Configurá tu meta en la pestaña Config.';
   }
 
-  document.getElementById('prev-label').textContent=ymLabel(pm);
-  const maxV=Math.max(prev.facturado,cur.facturado,prev.cobrado,cur.cobrado,1);
-  const cats=[{l:'Fact.',pv:prev.facturado,cv:cur.facturado},{l:'Cob.',pv:prev.cobrado,cv:cur.cobrado},{l:'Pend.',pv:prev.pendiente,cv:cur.pendiente}];
-  document.getElementById('prev-chart').innerHTML=cats.map(c=>{
-    const ph=Math.round((c.pv/maxV)*40)||2,ch=Math.round((c.cv/maxV)*40)||2;
-    return `<div class="mbar-group"><div class="mbar prev" style="height:${ph}px;flex:1"></div><div class="mbar cur" style="height:${ch}px;flex:1"></div></div>`;
-  }).join('')+cats.map(c=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--text3);margin-top:4px;position:absolute;bottom:-16px">${c.l}</div>`).join('');
+  // Best month
+  const allMonths=[...new Set(state.incomes.map(i=>incYM(i)))];
+  let bestMonth=null,bestAmt=0;
+  allMonths.forEach(ym=>{
+    const d=calcMonth(ym);
+    if(d.facturado>bestAmt){bestAmt=d.facturado;bestMonth=ym;}
+  });
+  const bmEl=document.getElementById('best-month-content');
+  if(bestMonth){
+    const bm=calcMonth(bestMonth);
+    const isThis=bestMonth===cm;
+    bmEl.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-size:16px;font-weight:700">${ymLabel(bestMonth)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${bm.count} ingreso${bm.count!==1?'s':''} · ${bm.clients} cliente${bm.clients!==1?'s':''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:20px;font-weight:800;color:var(--lime);letter-spacing:-0.5px">${fmtUSD(Math.round(bm.facturado))}</div>
+          ${isThis?'<div style="font-size:10px;color:var(--lime);margin-top:2px">← este mes</div>':''}
+        </div>
+      </div>
+      ${cur.facturado>0&&!isThis?`<div style="font-size:11px;color:var(--text3)">Este mes vas por ${fmtUSD(Math.round(cur.facturado))} · ${Math.round((cur.facturado/bm.facturado)*100)}% del récord</div>`:''}
+    `;
+  }else{
+    bmEl.innerHTML='<div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tu mejor mes.</div>';
+  }
+
+  // Top 3 clientes
+  const clientMap={};
+  state.incomes.forEach(i=>{
+    if(!i.client)return;
+    if(!clientMap[i.client])clientMap[i.client]={name:i.client,total:0,count:0};
+    clientMap[i.client].total+=toUSD(i.amount,i.currency);
+    clientMap[i.client].count++;
+  });
+  const topClients=Object.values(clientMap).sort((a,b)=>b.total-a.total).slice(0,3);
+  const tcEl=document.getElementById('top-clients-content');
+  if(topClients.length===0){
+    tcEl.innerHTML='<div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tus mejores clientes.</div>';
+  }else{
+    const medals=['🥇','🥈','🥉'];
+    tcEl.innerHTML=topClients.map((c,i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;${i<topClients.length-1?'border-bottom:1px solid var(--border);':''}">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">${medals[i]}</span>
+          <div>
+            <div style="font-size:14px;font-weight:700">${c.name}</div>
+            <div style="font-size:11px;color:var(--text3)">${c.count} ingreso${c.count!==1?'s':''}</div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--lime)">${fmtUSD(Math.round(c.total))}</div>
+      </div>`).join('');
+  }
 }
 
 function renderWallets(){
@@ -865,6 +930,21 @@ function renderWallets(){
 function renderIncomes(){
   const el=document.getElementById('income-list');
   document.getElementById('view-month-label').textContent=ymLabel(state.viewMonth);
+
+  // Summary cards for this month
+  const allInc=state.incomes.filter(i=>incYM(i)===state.viewMonth);
+  const totalUSD=allInc.filter(i=>i.currency==='USD').reduce((s,i)=>s+i.amount,0);
+  const totalARS=allInc.filter(i=>i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
+  const countUSD=allInc.filter(i=>i.currency==='USD').length;
+  const countARS=allInc.filter(i=>i.currency==='ARS').length;
+  const usdEl=document.getElementById('mes-total-usd');
+  const arsEl=document.getElementById('mes-total-ars');
+  if(usdEl) usdEl.textContent=fmtAmt(totalUSD,'');
+  if(arsEl) arsEl.textContent=fmtAmt(totalARS,'');
+  const usdCnt=document.getElementById('mes-count-usd');
+  const arsCnt=document.getElementById('mes-count-ars');
+  if(usdCnt) usdCnt.textContent=countUSD+' ingreso'+(countUSD!==1?'s':'');
+  if(arsCnt) arsCnt.textContent=countARS+' ingreso'+(countARS!==1?'s':'');
   // populate TC field with this month's rate
   const mesRateEl=document.getElementById('mes-rate');
   if(mesRateEl){
