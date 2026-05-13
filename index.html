@@ -796,8 +796,8 @@ function renderDash(){
   const cur=calcMonth(cm),prev=calcMonth(pm);
   const ahorros=state.wallets.filter(w=>w.currency==='USD').reduce((s,w)=>s+w.balance,0);
 
-  document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.cobrado),'')+'<span class="currency"> USD</span>';
-  document.getElementById('d-cobrado-sub').textContent='total facturado en USD · incluye conversión ARS';
+  document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.facturado),'')+'<span class="currency"> USD</span>';
+  document.getElementById('d-cobrado-sub').textContent='total facturado este mes';
   document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
   document.getElementById('d-facturado-sub').textContent='en dólares';
   document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
