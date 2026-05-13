@@ -802,10 +802,12 @@ function renderDash(){
 
   document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.facturado),'')+'<span class="currency"> USD</span>';
   document.getElementById('d-cobrado-sub').textContent='total facturado este mes';
+  document.getElementById('d-cobrado-ars').innerHTML=fmtAmt(Math.round(cur.facturadoARS),'')+'<span class="currency" style="color:var(--text2)"> ARS</span>';
+  document.getElementById('d-cobrado-ars-sub').textContent='total facturado en pesos';
   document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
   document.getElementById('d-facturado-sub').textContent='en dólares';
-  document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
-  document.getElementById('d-facturado-ars-sub').textContent='en pesos';
+  document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.pendiente),'');
+  document.getElementById('d-facturado-ars-sub').textContent='pendiente USD';
 
   const badge=document.getElementById('d-vs-badge');
   if(prev.facturado>0){
@@ -892,6 +894,19 @@ function renderDash(){
   const tcEl=document.getElementById('top-clients-content');
   if(topClients.length===0){
     tcEl.innerHTML='<div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tus mejores clientes.</div>';
+  }else{
+    const medals=['🥇','🥈','🥉'];
+    tcEl.innerHTML=topClients.map((c,i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;${i<topClients.length-1?'border-bottom:1px solid var(--border);':''}">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">${medals[i]}</span>
+          <div>
+            <div style="font-size:14px;font-weight:700">${c.name}</div>
+            <div style="font-size:11px;color:var(--text3)">${c.count} ingreso${c.count!==1?'s':''}</div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--lime)">${fmtUSD(Math.round(c.total))}</div>
+      </div>`).join('');
   }
 
   // Promedio mensual del año actual
@@ -921,19 +936,6 @@ function renderDash(){
       </div>
       <div style="font-size:11px;color:var(--text3)">Basado en ${months} mes${months!==1?'es':''} de ${thisYear} · ${yearInc.length} ingreso${yearInc.length!==1?'s':''}</div>
     `;
-  }else{
-    const medals=['🥇','🥈','🥉'];
-    tcEl.innerHTML=topClients.map((c,i)=>`
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;${i<topClients.length-1?'border-bottom:1px solid var(--border);':''}">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:18px">${medals[i]}</span>
-          <div>
-            <div style="font-size:14px;font-weight:700">${c.name}</div>
-            <div style="font-size:11px;color:var(--text3)">${c.count} ingreso${c.count!==1?'s':''}</div>
-          </div>
-        </div>
-        <div style="font-size:14px;font-weight:800;color:var(--lime)">${fmtUSD(Math.round(c.total))}</div>
-      </div>`).join('');
   }
 }
 
