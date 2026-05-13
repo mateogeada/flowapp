@@ -303,30 +303,26 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
         <div class="hero-card">
           <div class="hero-label">Facturado este mes</div>
           <div class="hero-value mono" id="d-cobrado">$0 <span class="currency">USD</span></div>
-          <div class="hero-sub" id="d-cobrado-sub">total en USD · incluye conversión ARS</div>
+          <div class="hero-sub" id="d-cobrado-sub">total facturado este mes</div>
           <div id="d-vs-badge" style="margin-top:6px"></div>
+        </div>
+
+        <div class="hero-card" style="margin-top:-4px">
+          <div class="hero-label">Facturado este mes</div>
+          <div class="hero-value mono" id="d-cobrado-ars" style="color:var(--blue)">$0 <span class="currency" style="color:var(--text2)">ARS</span></div>
+          <div class="hero-sub" id="d-cobrado-ars-sub">total facturado en pesos</div>
         </div>
 
         <div class="metric-grid" style="margin-bottom:12px">
           <div class="metric-tile">
-            <div class="metric-tile-label">Facturado USD</div>
-            <div class="metric-tile-val mono" id="d-facturado" style="font-size:16px;color:var(--lime)">$0</div>
-            <div class="metric-tile-sub" id="d-facturado-sub">en dólares</div>
+            <div class="metric-tile-label">Pendiente USD</div>
+            <div class="metric-tile-val mono" id="d-facturado" style="font-size:16px;color:var(--amber)">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-sub">por cobrar</div>
           </div>
           <div class="metric-tile">
-            <div class="metric-tile-label">Facturado ARS</div>
-            <div class="metric-tile-val mono" id="d-facturado-ars" style="font-size:16px;color:var(--blue)">$0</div>
-            <div class="metric-tile-sub" id="d-facturado-ars-sub">en pesos</div>
-          </div>
-          <div class="metric-tile">
-            <div class="metric-tile-label">Proyectos</div>
-            <div class="metric-tile-val" id="d-proyectos">0</div>
-            <div class="metric-tile-sub" id="d-clientes-sub">este mes</div>
-          </div>
-          <div class="metric-tile">
-            <div class="metric-tile-label">Ahorros</div>
-            <div class="metric-tile-val mono" id="d-ahorros" style="font-size:15px;color:var(--lime)">$0</div>
-            <div class="metric-tile-sub">USD total</div>
+            <div class="metric-tile-label">Pendiente ARS</div>
+            <div class="metric-tile-val mono" id="d-facturado-ars" style="font-size:16px;color:var(--amber)">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-ars-sub">por cobrar</div>
           </div>
         </div>
 
@@ -358,6 +354,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
             <div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tus mejores clientes.</div>
           </div>
         </div>
+
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:14px">📊 Promedio mensual del año</div>
+          <div id="avg-year-content">
+            <div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver el promedio.</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -802,9 +806,6 @@ function renderDash(){
   document.getElementById('d-facturado-sub').textContent='en dólares';
   document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
   document.getElementById('d-facturado-ars-sub').textContent='en pesos';
-  document.getElementById('d-proyectos').textContent=cur.count;
-  document.getElementById('d-clientes-sub').textContent=cur.clients+' cliente'+(cur.clients!==1?'s':'');
-  document.getElementById('d-ahorros').textContent=fmtAmt(Math.round(ahorros),'');
 
   const badge=document.getElementById('d-vs-badge');
   if(prev.facturado>0){
@@ -891,6 +892,35 @@ function renderDash(){
   const tcEl=document.getElementById('top-clients-content');
   if(topClients.length===0){
     tcEl.innerHTML='<div style="font-size:11px;color:var(--text3)">Cargá ingresos para ver tus mejores clientes.</div>';
+  }
+
+  // Promedio mensual del año actual
+  const thisYear=new Date().getFullYear().toString();
+  const yearInc=state.incomes.filter(i=>(i.date||'').startsWith(thisYear));
+  const yearMonths=[...new Set(yearInc.map(i=>incYM(i)))];
+  const avgEl=document.getElementById('avg-year-content');
+  if(!avgEl)return;
+  if(yearMonths.length===0){
+    avgEl.innerHTML='<div style="font-size:11px;color:var(--text3)">No hay ingresos en '+thisYear+'.</div>';
+  }else{
+    const totalUSDYear=yearInc.filter(i=>i.currency==='USD').reduce((s,i)=>s+i.amount,0);
+    const totalARSYear=yearInc.filter(i=>i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
+    const avgUSD=totalUSDYear/yearMonths.length;
+    const avgARS=totalARSYear/yearMonths.length;
+    const months=yearMonths.length;
+    avgEl.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div style="background:var(--s2);border-radius:var(--rs);padding:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">USD / mes</div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--lime)">${fmtAmt(Math.round(avgUSD),'')}</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--rs);padding:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">ARS / mes</div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--blue)">${fmtAmt(Math.round(avgARS),'')}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">Basado en ${months} mes${months!==1?'es':''} de ${thisYear} · ${yearInc.length} ingreso${yearInc.length!==1?'s':''}</div>
+    `;
   }else{
     const medals=['🥇','🥈','🥉'];
     tcEl.innerHTML=topClients.map((c,i)=>`
@@ -918,7 +948,7 @@ function renderWallets(){
     <div class="wallet-card" onclick="openWalletPanel('${w.id}')">
       <div class="wallet-card-left">
         <div class="wallet-name">${escH(w.name)}</div>
-        <div class="wallet-currency-badge">${w.currency}</div>
+        <div class="wallet-currency-badge">${w.currency}${getWalletCommission(w.name)>0?' · -'+(getWalletCommission(w.name)*100)+'% com.':''}</div>
       </div>
       <div class="wallet-card-right">
         <div class="wallet-balance">${fmtAmt(w.balance,w.currency)}</div>
@@ -1207,12 +1237,12 @@ function saveIncome(){
     // revert wallet if was paid
     if(prev&&prev.status==='abonado'){
       const ow=state.wallets.find(w=>w.id===prev.walletId);
-      if(ow)ow.balance=Math.max(0,ow.balance-prev.amount);
+      if(ow)ow.balance=Math.max(0,ow.balance-applyCommission(prev.amount,ow.name));
     }
     state.incomes=state.incomes.map(i=>i.id===id?{...i,client:cliente,project:proyecto,amount:precio,currency:moneda,walletId,status:estado,paidDate:estado==='abonado'?(i.paidDate||new Date().toISOString().slice(0,10)):null}:i);
     if(estado==='abonado'){
       const nw=state.wallets.find(w=>w.id===walletId);
-      if(nw)nw.balance+=precio;
+      if(nw)nw.balance+=applyCommission(precio,nw.name);
     }
   }else{
     const ni={id:uid(),client:cliente,project:proyecto,amount:precio,currency:moneda,walletId,status:estado,date:state.viewMonth+'-01',paidDate:estado==='abonado'?new Date().toISOString().slice(0,10):null};
@@ -1223,10 +1253,23 @@ function saveIncome(){
     state.incomes.push(ni);
     if(estado==='abonado'){
       const nw=state.wallets.find(w=>w.id===walletId);
-      if(nw)nw.balance+=precio;
+      if(nw)nw.balance+=applyCommission(precio,nw.name);
     }
   }
   save();closeSheet('sheet-income');renderAll();autoSync();
+}
+
+function getWalletCommission(walletName){
+  if(!walletName)return 0;
+  const n=walletName.toLowerCase();
+  if(n.includes('lemon'))return 0.02;
+  if(n.includes('paypal'))return 0.07;
+  return 0;
+}
+
+function applyCommission(amount, walletName){
+  const comm=getWalletCommission(walletName);
+  return amount*(1-comm);
 }
 
 function markPaid(id){
@@ -1235,7 +1278,10 @@ function markPaid(id){
   inc.status='abonado';
   inc.paidDate=new Date().toISOString().slice(0,10);
   const w=state.wallets.find(x=>x.id===inc.walletId);
-  if(w)w.balance+=inc.amount;
+  if(w){
+    const netAmount=applyCommission(inc.amount,w.name);
+    w.balance+=netAmount;
+  }
   save();renderAll();autoSync();
 }
 
@@ -1245,7 +1291,7 @@ function deleteIncome(id){
   if(!confirm('¿Eliminar este ingreso?'))return;
   if(inc.status==='abonado'){
     const w=state.wallets.find(x=>x.id===inc.walletId);
-    if(w)w.balance=Math.max(0,w.balance-inc.amount);
+    if(w)w.balance=Math.max(0,w.balance-applyCommission(inc.amount,w.name));
   }
   state.incomes=state.incomes.filter(i=>i.id!==id);
   save();renderAll();autoSync();deleteFromSupabase('incomes',id);
