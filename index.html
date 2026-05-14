@@ -802,7 +802,8 @@ function renderDash(){
 
   document.getElementById('d-cobrado').innerHTML=fmtAmt(Math.round(cur.facturado),'')+'<span class="currency"> USD</span>';
   document.getElementById('d-cobrado-sub').textContent='total facturado este mes';
-  document.getElementById('d-cobrado-ars').innerHTML=fmtAmt(Math.round(cur.facturadoARS),'')+'<span class="currency" style="color:var(--text2)"> ARS</span>';
+  const totalEnARS=Math.round(cur.facturadoUSD*rateForYM(currentYM())+cur.facturadoARS);
+  document.getElementById('d-cobrado-ars').innerHTML=fmtAmt(totalEnARS,'')+'<span class="currency" style="color:var(--text2)"> ARS</span>';
   document.getElementById('d-cobrado-ars-sub').textContent='total facturado en pesos';
   document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
   document.getElementById('d-facturado-sub').textContent='facturado en USD';
@@ -918,23 +919,30 @@ function renderDash(){
   if(yearMonths.length===0){
     avgEl.innerHTML='<div style="font-size:11px;color:var(--text3)">No hay ingresos en '+thisYear+'.</div>';
   }else{
-    const totalUSDYear=yearInc.filter(i=>i.currency==='USD').reduce((s,i)=>s+i.amount,0);
-    const totalARSYear=yearInc.filter(i=>i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
-    const avgUSD=totalUSDYear/yearMonths.length;
-    const avgARS=totalARSYear/yearMonths.length;
+    // promedio del total mensual (USD + ARS convertido) en USD, luego convertir a ARS con TC promedio
+    const monthTotalsUSD=yearMonths.map(ym=>{
+      const r=rateForYM(ym);
+      const inc=state.incomes.filter(i=>incYM(i)===ym);
+      const usd=inc.filter(i=>i.currency==='USD').reduce((s,i)=>s+i.amount,0);
+      const ars=inc.filter(i=>i.currency==='ARS').reduce((s,i)=>s+i.amount,0);
+      return usd+ars/r;
+    });
+    const avgUSD=monthTotalsUSD.reduce((s,v)=>s+v,0)/yearMonths.length;
+    const avgTC=rateForYM(currentYM());
+    const avgARS=avgUSD*avgTC;
     const months=yearMonths.length;
     avgEl.innerHTML=`
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div style="background:var(--s2);border-radius:var(--rs);padding:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">USD / mes</div>
-          <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--lime)">${fmtAmt(Math.round(avgUSD),'')}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Promedio USD</div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--amber)">${fmtAmt(Math.round(avgUSD),'')}</div>
         </div>
         <div style="background:var(--s2);border-radius:var(--rs);padding:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">ARS / mes</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Promedio ARS</div>
           <div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--blue)">${fmtAmt(Math.round(avgARS),'')}</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text3)">Basado en ${months} mes${months!==1?'es':''} de ${thisYear} · ${yearInc.length} ingreso${yearInc.length!==1?'s':''}</div>
+      <div style="font-size:11px;color:var(--text3)">Basado en ${months} mes${months!==1?'es':''} de ${thisYear} · TC actual: $${avgTC.toLocaleString('es-AR')}</div>
     `;
   }
 }
