@@ -302,7 +302,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
       <div style="padding-top:8px">
         <div class="hero-card">
           <div class="hero-label">Facturado este mes</div>
-          <div class="hero-value mono" id="d-cobrado">$0 <span class="currency">USD</span></div>
+          <div class="hero-value mono" id="d-cobrado" style="color:var(--amber)">$0 <span class="currency">USD</span></div>
           <div class="hero-sub" id="d-cobrado-sub">total facturado este mes</div>
           <div id="d-vs-badge" style="margin-top:6px"></div>
         </div>
@@ -315,14 +315,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 
         <div class="metric-grid" style="margin-bottom:12px">
           <div class="metric-tile">
-            <div class="metric-tile-label">Pendiente USD</div>
+            <div class="metric-tile-label">Facturado USD</div>
             <div class="metric-tile-val mono" id="d-facturado" style="font-size:16px;color:var(--amber)">$0</div>
-            <div class="metric-tile-sub" id="d-facturado-sub">por cobrar</div>
+            <div class="metric-tile-sub" id="d-facturado-sub">facturado en USD</div>
           </div>
           <div class="metric-tile">
-            <div class="metric-tile-label">Pendiente ARS</div>
-            <div class="metric-tile-val mono" id="d-facturado-ars" style="font-size:16px;color:var(--amber)">$0</div>
-            <div class="metric-tile-sub" id="d-facturado-ars-sub">por cobrar</div>
+            <div class="metric-tile-label">Facturado ARS</div>
+            <div class="metric-tile-val mono" id="d-facturado-ars" style="font-size:16px;color:var(--blue)">$0</div>
+            <div class="metric-tile-sub" id="d-facturado-ars-sub">facturado en ARS</div>
           </div>
         </div>
 
@@ -805,9 +805,9 @@ function renderDash(){
   document.getElementById('d-cobrado-ars').innerHTML=fmtAmt(Math.round(cur.facturadoARS),'')+'<span class="currency" style="color:var(--text2)"> ARS</span>';
   document.getElementById('d-cobrado-ars-sub').textContent='total facturado en pesos';
   document.getElementById('d-facturado').textContent=fmtAmt(Math.round(cur.facturadoUSD),'');
-  document.getElementById('d-facturado-sub').textContent='en dólares';
-  document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.pendiente),'');
-  document.getElementById('d-facturado-ars-sub').textContent='pendiente USD';
+  document.getElementById('d-facturado-sub').textContent='facturado en USD';
+  document.getElementById('d-facturado-ars').textContent=fmtAmt(Math.round(cur.facturadoARS),'');
+  document.getElementById('d-facturado-ars-sub').textContent='facturado en ARS';
 
   const badge=document.getElementById('d-vs-badge');
   if(prev.facturado>0){
