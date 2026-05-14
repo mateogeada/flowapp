@@ -103,7 +103,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Helvet
 
 /* INCOME LIST */
 .inc-list{display:flex;flex-direction:column;gap:8px}
-.inc-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow:hidden}
+.drag-handle{position:absolute;left:0;top:0;bottom:0;width:32px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px;cursor:grab;touch-action:none;user-select:none;border-radius:var(--r) 0 0 var(--r)}
+.drag-handle:active{cursor:grabbing;color:var(--lime)}
+.inc-card.dragging{opacity:.4;background:var(--s1)}
+.inc-card.drag-over{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime-border)}
+.inc-card{position:relative;padding-left:32px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px 14px 14px 36px;overflow:hidden}
 .inc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .inc-client{font-size:15px;font-weight:700;letter-spacing:-.3px}
 .inc-project{font-size:12px;color:var(--text2);margin-top:1px}
@@ -997,11 +1001,16 @@ function renderIncomes(){
   else if(state.filter==='abonado')inc=inc.filter(i=>i.status==='abonado');
   else if(state.filter==='usd')inc=inc.filter(i=>i.currency==='USD');
   else if(state.filter==='ars')inc=inc.filter(i=>i.currency==='ARS');
-  inc.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  inc.sort((a,b)=>{
+    const ai=state.incomes.findIndex(x=>x.id===a.id);
+    const bi=state.incomes.findIndex(x=>x.id===b.id);
+    return ai-bi;
+  });
   if(inc.length===0){el.innerHTML='<div class="empty">No hay ingresos en este mes.</div>';return;}
   el.innerHTML=inc.map(i=>{
     const wName=state.wallets.find(w=>w.id===i.walletId)?.name||'—';
-    return `<div class="inc-card">
+    return `<div class="inc-card" draggable="false" data-id="${i.id}">
+      <div class="drag-handle" title="Mantené para mover">⠿</div>
       <div class="inc-card-top">
         <div><div class="inc-client">${escH(i.client)}</div><div class="inc-project">${escH(i.project)} · ${escH(wName)}</div></div>
         <div>
@@ -1018,6 +1027,116 @@ function renderIncomes(){
       ${i.status==='pendiente'?`<div class="inc-actions"><button class="btn-pay" onclick="markPaid('${i.id}')">✓ Marcar como abonado</button></div>`:''}
     </div>`;
   }).join('');
+  initDragSort(el);
+}
+
+function initDragSort(container){
+  let dragging=null,ghost=null,startY=0,offsetY=0,longPressTimer=null,active=false;
+
+  function cardFromHandle(el){return el.closest('.inc-card');}
+  function getCards(){return [...container.querySelectorAll('.inc-card')];}
+
+  function startDrag(card,clientY){
+    active=true;
+    dragging=card;
+    startY=clientY;
+    const rect=card.getBoundingClientRect();
+    offsetY=clientY-rect.top;
+    ghost=card.cloneNode(true);
+    ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.85;pointer-events:none;z-index:9999;border-radius:var(--r);transform:scale(1.02);box-shadow:0 8px 30px rgba(0,0,0,.4);transition:none`;
+    document.body.appendChild(ghost);
+    card.classList.add('dragging');
+    document.body.style.userSelect='none';
+  }
+
+  function moveDrag(clientY){
+    if(!active||!ghost)return;
+    ghost.style.top=(clientY-offsetY)+'px';
+    const cards=getCards().filter(c=>c!==dragging);
+    let target=null;
+    cards.forEach(c=>{
+      const r=c.getBoundingClientRect();
+      const mid=r.top+r.height/2;
+      if(clientY>mid)target=c;
+    });
+    cards.forEach(c=>c.classList.remove('drag-over'));
+    if(target)target.classList.add('drag-over');
+    else if(cards.length>0)cards[0].classList.add('drag-over');
+  }
+
+  function endDrag(clientY){
+    if(!active)return;
+    active=false;
+    if(ghost){ghost.remove();ghost=null;}
+    if(!dragging){return;}
+    dragging.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(c=>c.classList.remove('drag-over'));
+    document.body.style.userSelect='';
+
+    // find drop position
+    const cards=getCards().filter(c=>c!==dragging);
+    let afterEl=null;
+    cards.forEach(c=>{
+      const r=c.getBoundingClientRect();
+      if(clientY>r.top+r.height/2)afterEl=c;
+    });
+
+    // reorder in state
+    const dragId=dragging.dataset.id;
+    const idx=state.incomes.findIndex(i=>i.id===dragId);
+    if(idx===-1){dragging=null;return;}
+    const [item]=state.incomes.splice(idx,1);
+    if(afterEl){
+      const afterId=afterEl.dataset.id;
+      const afterIdx=state.incomes.findIndex(i=>i.id===afterId);
+      state.incomes.splice(afterIdx+1,0,item);
+    }else{
+      // drop before first card
+      const firstId=cards[0]?.dataset.id;
+      const firstIdx=firstId?state.incomes.findIndex(i=>i.id===firstId):state.incomes.length;
+      state.incomes.splice(Math.max(0,firstIdx),0,item);
+    }
+    dragging=null;
+    save();
+    renderIncomes();
+  }
+
+  // Touch events (long press to activate)
+  container.addEventListener('touchstart',e=>{
+    const handle=e.target.closest('.drag-handle');
+    if(!handle)return;
+    const card=cardFromHandle(handle);
+    if(!card)return;
+    const touch=e.touches[0];
+    longPressTimer=setTimeout(()=>{
+      navigator.vibrate&&navigator.vibrate(30);
+      startDrag(card,touch.clientY);
+    },300);
+  },{passive:true});
+
+  container.addEventListener('touchmove',e=>{
+    if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;}
+    if(!active)return;
+    e.preventDefault();
+    moveDrag(e.touches[0].clientY);
+  },{passive:false});
+
+  container.addEventListener('touchend',e=>{
+    if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;}
+    if(!active)return;
+    endDrag(e.changedTouches[0].clientY);
+  });
+
+  // Mouse events (desktop)
+  container.addEventListener('mousedown',e=>{
+    const handle=e.target.closest('.drag-handle');
+    if(!handle)return;
+    const card=cardFromHandle(handle);
+    if(!card)return;
+    startDrag(card,e.clientY);
+  });
+  document.addEventListener('mousemove',e=>{if(active)moveDrag(e.clientY);});
+  document.addEventListener('mouseup',e=>{if(active)endDrag(e.clientY);});
 }
 
 function renderHistory(){
